@@ -891,13 +891,13 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                 <th class="text-center" scope="col" style="border-top:1px solid transparent;border-left:1px solid transparent;"></th>
 
                                 <!-- MAKSIMALNO ODSTUPANJE -->
-                                <th class="text-center" scope="col" style="">Maksimalno odstupanje</th>
+                                <th class="text-center" scope="col">Maksimalno odstupanje</th>
 
                                 <!-- MAKSIMALNO DOZVOLJENO ODSTUPANJE -->
-                                <th class="text-center" scope="col" style="">Maksimalno dozvoljeno odstupanje</th>
+                                <th class="text-center" scope="col">Maksimalno dozvoljeno odstupanje</th>
 
                                 <!-- ZADOVOLJAVA -->
-                                <th class="text-center" scope="col" style="">Zadovoljava</th>
+                                <th class="text-center" scope="col">Zadovoljava</th>
 
                             </tr>
 
