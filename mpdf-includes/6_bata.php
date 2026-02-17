@@ -47,7 +47,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 <div class="main-content">
     
     <!-- PREGLED MJERILA -->
-    <p><strong>Испитивање тачности инфузомата:</strong></p>
+    <!--<p><strong>Испитивање тачности инфузомата:</strong></p>-->
 
     <!-- #16 Protok -->
     <?php
@@ -63,7 +63,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     }else{ ?>
 
-    <p style="text-align:center;">Проток</p>
+    <p style="text-align:center;">Protok</p>
 
     <?php
     //REFERENTNE VRIJEDNOSTI
@@ -73,13 +73,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (ml/h)</th>
-                <th colspan="3">Xm (ml/h)</th>
-                <th rowspan="2">&lt;Xm&gt; (ml/h)</th>
-                <th rowspan="2">ΔX (ml/h)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [ml/h]</th>
+                <th colspan="3">Xm [ml/h]</th>
+                <th rowspan="2">&lt;Xm&gt; [ml/h]</th>
+                <th rowspan="2">ΔX [ml/h]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -88,30 +88,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
 
     <br />
 
     <?php } ?>
-    
-    <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
-    <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Правилником о верификацији инфузомата („Службени гласник Републике Српске“, број 98/23) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
-
-    <br />
-
-    <h4 class="second-headline">Напомена:</h4>
-    <p style="text-align:justify;"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_napomena']); ?></p>
-
-    <br /><br /><br />
-
-    <div style="">
-        <p style="text-align: center;margin: 0 10% 0 70%;">Преглед извршио</p>
-        <p style="text-align: center;margin: 0 7% 0 67%;border-bottom: 1px solid #000000;"><?php echo latinicaUCirilicu($mjerenjeizvrsio['kontrolori_ime'])." ".latinicaUCirilicu($mjerenjeizvrsio['kontrolori_prezime']); ?></p>
-        <p style="text-align: center;margin: 0 10% 0 70%;">(име и презиме)</p>
-    </div>
 </div>
 
 <style>

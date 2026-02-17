@@ -68,10 +68,10 @@ function calculateSampleStandardDeviation($array) {
 <div class="main-content">
     
     <!-- PREGLED MJERILA -->
-    <p><strong>Испитивање тачности мјерила крвног притиска аутоматског:</strong></p>
+    <!--<p><strong>Испитивање тачности мјерила крвног притиска аутоматског:</strong></p>-->
 
     <!-- #139 Ispitivanje tačnosti i histerezisa mjerila -->
-    <p style="text-align:center;">Испитиванје тачности</p>
+    <p style="text-align:center;">Ispitivanje tačnosti</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -221,7 +221,7 @@ function calculateSampleStandardDeviation($array) {
     <br /><br /><br />
 
     <!-- #140 Ispitivanje curenja zraka u pneumatskom sistemu -->
-    <p style="text-align:center;">Испитивање цурења зрака у пнеуматском систему</p>
+    <p style="text-align:center;">Ispitivanje curenja zraka u pneumatskom sistemu</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -364,7 +364,7 @@ function calculateSampleStandardDeviation($array) {
     <br />
 
     <!-- #141 Ponovljivost -->
-    <p style="text-align:center;">Испитиванје поновљивости аутоматског мјерила</p>
+    <p style="text-align:center;">Ispitivanje ponovljivosti automatskog mjerila</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -602,23 +602,6 @@ function calculateSampleStandardDeviation($array) {
             </tr>
         </tbody>
     </table>
-    
-    <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
-    <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Метролошким упутством за преглед манометара за мјерење крвног притиска („Службени гласник Републике Српске“, број 9/05) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
-
-    <br /><br /><br /><br /><br />
-
-    <h4 class="second-headline">Напомена:</h4>
-    <p style="text-align:justify;"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_napomena']); ?></p>
-
-    <br /><br /><br />
-
-    <div style="">
-        <p style="text-align: center;margin: 0 10% 0 70%;">Преглед извршио</p>
-        <p style="text-align: center;margin: 0 7% 0 67%;border-bottom: 1px solid #000000;"><?php echo latinicaUCirilicu($mjerenjeizvrsio['kontrolori_ime'])." ".latinicaUCirilicu($mjerenjeizvrsio['kontrolori_prezime']); ?></p>
-        <p style="text-align: center;margin: 0 10% 0 70%;">(име и презиме)</p>
-    </div>
 </div>
 
 <style>

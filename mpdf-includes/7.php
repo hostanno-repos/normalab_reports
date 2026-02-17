@@ -303,7 +303,7 @@ include_once ('reports_head.php')
     
     <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
     <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Правилником о верификацији неонаталних и педијатријских инкубатора („Службени гласник Републике Српске“, број 98/23) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
+    <p style="text-align:justify;">Резултати инспекције се односе искључиво на дати предмет у тренутку инспекције. На основу Рјешења о измјени и допуни рјешења о овлашћивању тијела за верификацију мјерила број 18/1.10/393.10-03-09-25/25 од 30.12.2025. године, на мјерило је постављен републички жиг у облику наљепнице број: <?php echo $izvjestaj["izvjestaji_novizig"];?>.</p>
 
     <br />
 
@@ -319,73 +319,4 @@ include_once ('reports_head.php')
     </div>
 </div>
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    .main-headline{
-        text-align: center;
-        font-size: 12px;
-    }
-    .second-headline{
-        font-size: 12px;
-    }
-    .main-content p{
-        margin:2px 0;
-        font-size: 12px;
-    }
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    table, th, td {
-        border: 1px solid #000;
-        font-size: 12px;
-    }
-    table.rezultati-otkucaji{
-        table-layout: fixed;
-    }
-    table.rezultati-otkucaji, table.rezultati-otkucaji th, table.rezultati-otkucaji td{
-        width: 35%;
-        word-wrap: break-word;
-    }
-    .verifikacija-vrsta-verifikacije,
-    .verifikacija-radni-uslovi,
-    .podaci-etalon,
-    .pregled-mjerila{
-       margin:2px 0;
-       padding: 0;
-       line-height: 12px;
-    }
-    .verifikacija-republicki-zig{
-       margin:2px 0;
-       padding: 0;
-       line-height: 12px;
-    }
-    .verifikacija-vrsta-verifikacije p,
-    .verifikacija-radni-uslovi p{
-        float: left;
-        width:25%;
-        margin:2px 0;
-    }
-    .verifikacija-republicki-zig p{
-        float: left;
-        margin:2px 0;
-    }
-    .podaci-etalon p{
-        float: left;
-        width:33%;
-        margin:2px 0;
-    }
-    .pregled-mjerila p{
-        float: left;
-        width:50%;
-        margin:2px 0;
-    }
-    .red-bez-mjerenja td{
-        text-align: center;
-    }
-</style>
+<?php include_once('reports_styles3.php'); ?>

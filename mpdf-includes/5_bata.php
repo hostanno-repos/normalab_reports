@@ -47,7 +47,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 <div class="main-content">
     
     <!-- PREGLED MJERILA -->
-    <p><strong>Испитивање тачности анестезиолошке машине:</strong></p>
+    <!--<p><strong>Испитивање тачности анестезиолошке машине:</strong></p>-->
 
     <!-- #12 Protok -->
     <?php
@@ -63,7 +63,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     }else{ ?>
 
-    <p style="text-align:center;">Проток</p>
+    <p style="text-align:center;">Protok</p>
 
     <?php
     //REFERENTNE VRIJEDNOSTI
@@ -73,13 +73,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (l/min)</th>
-                <th colspan="3">Xm (l/min)</th>
-                <th rowspan="2">&lt;Xm&gt; (l/min)</th>
-                <th rowspan="2">ΔX (l/min)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [l/min]</th>
+                <th colspan="3">Xm [l/min]</th>
+                <th rowspan="2">&lt;Xm&gt; [l/min]</th>
+                <th rowspan="2">ΔX [l/min]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -88,7 +88,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
     <br /><br /><br /><br /><br />
@@ -108,7 +108,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     }else{ ?>
 
-    <p style="text-align:center;">Излазни притисак респиратора</p>
+    <p style="text-align:center;">Izlazni pritisak respiratora</p>
 
     <?php
     //REFERENTNE VRIJEDNOSTI
@@ -118,13 +118,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (cmH2O)</th>
-                <th colspan="3">Xm (cmH2O)</th>
-                <th rowspan="2">&lt;Xm&gt; (cmH2O)</th>
-                <th rowspan="2">ΔX (cmH2O)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [cmH2O]</th>
+                <th colspan="3">Xm [cmH2O]</th>
+                <th rowspan="2">&lt;Xm&gt; [cmH2O]</th>
+                <th rowspan="2">ΔX [cmH2O]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -133,7 +133,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
     
@@ -155,7 +155,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     }else{ ?>
 
-    <p style="text-align:center;">Волумен</p>
+    <p style="text-align:center;">Volumen</p>
 
     <?php
     //REFERENTNE VRIJEDNOSTI
@@ -165,13 +165,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (ml)</th>
-                <th colspan="3">Xm (ml)</th>
-                <th rowspan="2">&lt;Xm&gt; (ml)</th>
-                <th rowspan="2">ΔX (ml)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [ml]</th>
+                <th colspan="3">Xm [ml]</th>
+                <th rowspan="2">&lt;Xm&gt; [ml]</th>
+                <th rowspan="2">ΔX [ml]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -180,7 +180,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
     
@@ -202,7 +202,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     }else{ ?>
 
-    <p style="text-align:center;">Концентртација анестезиолошких гасова</p>
+    <p style="text-align:center;">Koncentracija anestezioloških gasova</p>
 
     <?php
     //REFERENTNE VRIJEDNOSTI
@@ -212,13 +212,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (%)</th>
-                <th colspan="3">Xm (%)</th>
-                <th rowspan="2">&lt;Xm&gt; (%)</th>
-                <th rowspan="2">ΔX (%)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [%]</th>
+                <th colspan="3">Xm [%]</th>
+                <th rowspan="2">&lt;Xm&gt; [%]</th>
+                <th rowspan="2">ΔX [%]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -227,30 +227,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
     
     <br />
 
     <?php } ?>
-    
-    <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
-    <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Правилником о верификацији анестезиолошких машина („Службени гласник Републике Српске“, број 98/23) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
-
-    <br /><br /><br /><br />
-
-    <h4 class="second-headline">Напомена:</h4>
-    <p style="text-align:justify;"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_napomena']); ?></p>
-
-    <br /><br /><br />
-
-    <div style="">
-        <p style="text-align: center;margin: 0 10% 0 70%;">Преглед извршио</p>
-        <p style="text-align: center;margin: 0 7% 0 67%;border-bottom: 1px solid #000000;"><?php echo latinicaUCirilicu($mjerenjeizvrsio['kontrolori_ime'])." ".latinicaUCirilicu($mjerenjeizvrsio['kontrolori_prezime']); ?></p>
-        <p style="text-align: center;margin: 0 10% 0 70%;">(име и презиме)</p>
-    </div>
 </div>
 
 <style>

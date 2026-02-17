@@ -47,10 +47,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 <div class="main-content">
     
     <!-- PREGLED MJERILA -->
-    <p><strong>Испитивање тачности дијализних уређаја:</strong></p>
+    <!--<p><strong>Испитивање тачности дијализних уређаја:</strong></p>-->
 
     <!-- #27 Konduktivitet -->
-    <p style="text-align:center;">Кондуктивитет (проводност)</p>
+    <p style="text-align:center;">Konduktivitet (provodnost)</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -62,13 +62,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (mS/cm)</th>
-                <th colspan="3">Xm (mS/cm)</th>
-                <th rowspan="2">&lt;Xm&gt; (mS/cm)</th>
-                <th rowspan="2">ΔX (mS/cm)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [mS/cm]</th>
+                <th colspan="3">Xm [mS/cm]</th>
+                <th rowspan="2">&lt;Xm&gt; [mS/cm]</th>
+                <th rowspan="2">ΔX [mS/cm]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -78,6 +78,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
         </thead>
         <tbody>
             <?php 
+            $pismo = "LAT";
             $mjernaVelicinaID = 27;
             include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
@@ -86,7 +87,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <br />
 
     <!-- #28 Temoeratura vode -->
-    <p style="text-align:center;">Температура воде</p>
+    <p style="text-align:center;">Temperatura vode</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -98,13 +99,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (℃)</th>
-                <th colspan="3">Xm (℃)</th>
-                <th rowspan="2">&lt;Xm&gt; (℃)</th>
-                <th rowspan="2">ΔX (℃)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (℃)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [℃]</th>
+                <th colspan="3">Xm [℃]</th>
+                <th rowspan="2">&lt;Xm&gt; [℃]</th>
+                <th rowspan="2">ΔX [℃]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -114,6 +115,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
         </thead>
         <tbody>
             <?php 
+                $pismo = "LAT";
                 $mjernaVelicinaID = 28;
                 include('script[one-hidden-two-not-measurable-absolute].php'); 
             ?>
@@ -122,8 +124,8 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
     <br /><br /><br /><br /><br />
 
-    <!-- #29 Притисак -->
-    <p style="text-align:center;">Притисак</p>
+    <!-- #29 Pritisak -->
+    <p style="text-align:center;">Pritisak</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -135,13 +137,13 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (mmHg)</th>
-                <th colspan="3">Xm (mmHg)</th>
-                <th rowspan="2">&lt;Xm&gt; (mmHg)</th>
-                <th rowspan="2">ΔX (mmHg)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
-                <th rowspan="2">Усаглашеност</th>
+                <th rowspan="2">Xs [mmHg]</th>
+                <th colspan="3">Xm [mmHg]</th>
+                <th rowspan="2">&lt;Xm&gt; [mmHg]</th>
+                <th rowspan="2">ΔX [mmHg]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
                 <th>1</th>
@@ -150,28 +152,11 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
         </tbody>
     </table>
 
     <br />
-    
-    <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
-    <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Правилником о верификацији дијализних уређаја („Службени гласник Републике Српске“, број 98/23) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
-
-    <br />
-
-    <h4 class="second-headline">Напомена:</h4>
-    <p style="text-align:justify;"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_napomena']); ?></p>
-
-    <br /><br /><br />
-
-    <div style="">
-        <p style="text-align: center;margin: 0 10% 0 70%;">Преглед извршио</p>
-        <p style="text-align: center;margin: 0 7% 0 67%;border-bottom: 1px solid #000000;"><?php echo latinicaUCirilicu($mjerenjeizvrsio['kontrolori_ime'])." ".latinicaUCirilicu($mjerenjeizvrsio['kontrolori_prezime']); ?></p>
-        <p style="text-align: center;margin: 0 10% 0 70%;">(име и презиме)</p>
-    </div>
 </div>
 
 <style>

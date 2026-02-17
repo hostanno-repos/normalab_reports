@@ -62,12 +62,12 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Xs (ml/h)</th>
-                <th colspan="3">Xm (ml/h)</th>
-                <th rowspan="2">&lt;Xm&gt; (ml/h)</th>
-                <th rowspan="2">ΔX (ml/h)</th>
-                <th rowspan="2">Г (%)</th>
-                <th rowspan="2">НДГ (%)</th>
+                <th rowspan="2">Xs [ml/h]</th>
+                <th colspan="3">Xm [ml/h]</th>
+                <th rowspan="2">&lt;Xm&gt; [ml/h]</th>
+                <th rowspan="2">ΔX [ml/h]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
                 <th rowspan="2">Usaglašenost</th>
             </tr>
             <tr>
