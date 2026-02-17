@@ -1,3 +1,3 @@
 deployment:
   tasks:
-    - /bin/cp -rf . /home/normalab/reports2.normalab.ba/
+    - /usr/bin/rsync -av --delete ./ /home/normalab/reports2.normalab.ba/
