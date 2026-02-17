@@ -6,9 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && realpath(__FILE__) == realpath($_SERV
     die(header('location: 404.php'));
 }
 
-$database = "normalab_reports";
-$username = "root";
-$password = "";
+include_once('cred.php');
 
 try {
     $pdo = new PDO(

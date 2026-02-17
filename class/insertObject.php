@@ -124,6 +124,10 @@ if ($insertObject == 1) {
         header('Location: korisnici.php');
         exit;
     }
+    if ($nazivTabele == 'rjesenjazaovlascivanje' && !ima_permisiju('rjesenjazaovlascivanje', 'dodavanje')) {
+        header('Location: rjesenjaovlascivanja.php');
+        exit;
+    }
 
     if (isset($fakture_brojac)) {
         $fakture_brojac = $fakture_brojac + 1;
@@ -250,6 +254,9 @@ if ($insertObject == 1) {
         case "dodajkorisnika.php":
             header('Location: korisnici.php');
             break;
+        case "dodajrjesenjeovlascivanja.php":
+            header('Location: rjesenjaovlascivanja.php');
+            break;
         default:
             header('Location: ' . basename($_SERVER['REQUEST_URI'], '?' . $_SERVER['QUERY_STRING']) . $getString);
             break;
@@ -300,7 +307,7 @@ if ($insertIzvjestaj == 1) {
     //$izvjestaji_ovjeriodatum = $_POST['izvjestaji_ovjeriodatum'];
 
     //WRITE QUERY
-    $query = $pdo->prepare('INSERT INTO izvjestaji (izvjestaji_radninalogid,izvjestaji_broj,izvjestaji_tipizvjestajaid,izvjestaji_datumizdavanja,izvjestaji_datuminspekcije,izvjestaji_datumzahtjeva,izvjestaji_zahtjevzaispitivanje,izvjestaji_mjeriloid,izvjestaji_mjestoinspekcije,izvjestaji_vrstainspekcijeid,izvjestaji_opremazainspekciju,izvjestaji_opisprocedure,izvjestaji_temperatura,izvjestaji_vlaznost,izvjestaji_skinutizig,izvjestaji_mjerilocisto,izvjestaji_mjerilocjelovito,izvjestaji_mjerilocitljivo,izvjestaji_mjerilokablovi,izvjestaji_novizig,izvjestaji_napomena,izvjestaji_izvrsioid,izvjestaji_izvrsiodadatum,izvjestaji_ovjerioid,izvjestaji_ovjeriodatum)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $query = $pdo->prepare('INSERT INTO izvjestaji (izvjestaji_radninalogid,izvjestaji_broj,izvjestaji_tipizvjestajaid,izvjestaji_datumizdavanja,izvjestaji_datuminspekcije,izvjestaji_datumzahtjeva,izvjestaji_zahtjevzaispitivanje,izvjestaji_mjeriloid,izvjestaji_mjestoinspekcije,izvjestaji_lokacijamjerila,izvjestaji_vrstainspekcijeid,izvjestaji_opremazainspekciju,izvjestaji_opisprocedure,izvjestaji_temperatura,izvjestaji_vlaznost,izvjestaji_skinutizig,izvjestaji_mjerilocisto,izvjestaji_mjerilocjelovito,izvjestaji_mjerilocitljivo,izvjestaji_mjerilokablovi,izvjestaji_novizig,izvjestaji_napomena,izvjestaji_izvrsioid,izvjestaji_izvrsiodadatum,izvjestaji_ovjerioid,izvjestaji_ovjeriodatum)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
     //BIND VALUES
     $query->bindValue(1, $izvjestaji_radninalogid);
@@ -312,22 +319,23 @@ if ($insertIzvjestaj == 1) {
     $query->bindValue(7, $izvjestaji_zahtjevzaispitivanje);
     $query->bindValue(8, $izvjestaji_mjeriloid);
     $query->bindValue(9, $izvjestaji_mjestoinspekcije);
-    $query->bindValue(10, $izvjestaji_vrstainspekcijeid);
-    $query->bindValue(11, $izvjestaji_opremazainspekciju);
-    $query->bindValue(12, $izvjestaji_opisprocedure);
-    $query->bindValue(13, $izvjestaji_temperatura);
-    $query->bindValue(14, $izvjestaji_vlaznost);
-    $query->bindValue(15, $izvjestaji_skinutizig);
-    $query->bindValue(16, $izvjestaji_mjerilocisto);
-    $query->bindValue(17, $izvjestaji_mjerilocjelovito);
-    $query->bindValue(18, $izvjestaji_mjerilocitljivo);
-    $query->bindValue(19, $izvjestaji_mjerilokablovi);
-    $query->bindValue(20, $izvjestaji_novizig);
-    $query->bindValue(21, $izvjestaji_napomena);
-    $query->bindValue(22, $izvjestaji_izvrsioid);
-    $query->bindValue(23, $izvjestaji_izvrsiodadatum);
-    $query->bindValue(24, $izvjestaji_ovjerioid);
-    $query->bindValue(25, $izvjestaji_ovjeriodatum);
+    $query->bindValue(10, isset($izvjestaji_lokacijamjerila) ? $izvjestaji_lokacijamjerila : null);
+    $query->bindValue(11, $izvjestaji_vrstainspekcijeid);
+    $query->bindValue(12, $izvjestaji_opremazainspekciju);
+    $query->bindValue(13, $izvjestaji_opisprocedure);
+    $query->bindValue(14, $izvjestaji_temperatura);
+    $query->bindValue(15, $izvjestaji_vlaznost);
+    $query->bindValue(16, $izvjestaji_skinutizig);
+    $query->bindValue(17, $izvjestaji_mjerilocisto);
+    $query->bindValue(18, $izvjestaji_mjerilocjelovito);
+    $query->bindValue(19, $izvjestaji_mjerilocitljivo);
+    $query->bindValue(20, $izvjestaji_mjerilokablovi);
+    $query->bindValue(21, $izvjestaji_novizig);
+    $query->bindValue(22, $izvjestaji_napomena);
+    $query->bindValue(23, $izvjestaji_izvrsioid);
+    $query->bindValue(24, $izvjestaji_izvrsiodadatum);
+    $query->bindValue(25, $izvjestaji_ovjerioid);
+    $query->bindValue(26, $izvjestaji_ovjeriodatum);
 
     //print_r($query);
 

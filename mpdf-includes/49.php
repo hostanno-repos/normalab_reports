@@ -1,38 +1,6 @@
 <?php
 
-echo '<sethtmlpageheader name="header" value="on" show-this-page="1" />';
-//echo '<sethtmlpagefooter name="footer" value="on" show-this-page="1" />';
-
-include_once('./connection.php');
-include_once('./class/getObject.php');
-
-//FETCH IZVJEŠTAJ
-$izvjestaj = new singleObject;
-$izvjestaj = $izvjestaj->fetch_single_object('izvjestaji', 'izvjestaji_id', $_GET['izvjestaj']);
-
-//FETCH MJERITELJ
-$mjerenjeizvrsio = new singleObject;
-$mjerenjeizvrsio = $mjerenjeizvrsio->fetch_single_object('kontrolori', 'kontrolori_id', $izvjestaj['izvjestaji_izvrsioid']);
-
-//FETCH RADNI NALOG
-$radninalog = new singleObject;
-$radninalog = $radninalog->fetch_single_object('radninalozi', 'radninalozi_id', $izvjestaj['izvjestaji_radninalogid']);
-
-//FETCH KLIJENT
-$klijent = new singleObject;
-$klijent = $klijent->fetch_single_object('klijenti', 'klijenti_id', $radninalog['radninalozi_klijentid']);
-
-//FETCH MJERILO
-$mjerilo = new singleObject;
-$mjerilo = $mjerilo->fetch_single_object('mjerila', 'mjerila_id', $radninalog['radninalozi_mjeriloid']);
-
-//FETCH VRSTA UREĐAJA
-$vrstauredjaja = new singleObject;
-$vrstauredjaja = $vrstauredjaja->fetch_single_object('vrsteuredjaja', 'vrsteuredjaja_id', $mjerilo['mjerila_vrstauredjajaid']);
-
-//FETCH VRSTE INSPEKCIJE
-$vrsteinspekcije = new allObjects;
-$vrsteinspekcije = $vrsteinspekcije->fetch_all_objects('vrsteinspekcije', 'vrsteinspekcije_id', 'ASC');
+include_once ('reports_head.php')
 
 function calculateSampleStandardDeviation($array) {
     $count = count($array);
@@ -61,139 +29,7 @@ function calculateSampleStandardDeviation($array) {
     <!-- NASLOV -->
     <h3 class="main-headline">ЗАПИСНИК О ПРЕГЛЕДУ<br>МЈЕРИЛО КРВНОГ ПРИТИСКА АУТОМАТСКО</h3>
 
-    <!-- BROJ IZVJEŠTAJA -->
-    <p>Број: <?php echo $izvjestaj['izvjestaji_broj'] ?></p>
-
-    <!-- DATUM IZDAVANJA -->
-    <p>Датум: <?php echo ($izvjestaj['izvjestaji_datumizdavanja'] !== null && $izvjestaj['izvjestaji_datumizdavanja'] !== '') ? date('d.m.Y.', strtotime($izvjestaj['izvjestaji_datumizdavanja'])) : '-'; ?></p>
-
-    <!-- PRAZAN RED -->
-    <br>
-
-    <!-- PODNOSILAC ZAHTJEVA -->
-    <p><strong>Подносилац захтјева:</strong> <?php echo latinicaUCirilicu($klijent['klijenti_naziv']); ?></p>
-    <p>Број: <?php echo latinicaUCirilicu($radninalog['radninalozi_brojzahtjeva']); ?></p>
-    <p>Датум: <?php echo ($izvjestaj['izvjestaji_datumzahtjeva'] !== null && $izvjestaj['izvjestaji_datumzahtjeva'] !== '') ? date('d.m.Y.', strtotime($izvjestaj['izvjestaji_datumzahtjeva'])) : '-'; ?></p>
-
-    <!-- PRAZAN RED -->
-    <br>
-
-    <!-- MJERILO -->
-    <p><strong>Мјерило:</strong></p>
-    <table cellpadding="5" cellspacing="0" width="100%">
-        <tbody>
-            <tr>
-                <td colspan="2">Назив мјерила:</td>
-                <td colspan="4"><?php echo latinicaUCirilicu($vrstauredjaja['vrsteuredjaja_naziv']); ?></td>
-            </tr>
-            <tr>
-                <td colspan="2">Произвођач мјерила:</td>
-                <td colspan="4"><?php echo $mjerilo['mjerila_proizvodjac']; ?></td>
-            </tr>
-            <tr>
-                <td>Тип:</td>
-                <td><?php echo $mjerilo['mjerila_tip']; ?></td>
-                <td>Серијски број:</td>
-                <td><?php echo $mjerilo['mjerila_serijskibroj']; ?></td>
-                <td>Службена ознака:</td>
-                <td width="150"><?php echo $mjerilo['mjerila_sluzbenaoznaka']; ?></td>
-            </tr>
-            <tr>
-                <td colspan="2">Година производње:</td>
-                <td colspan="4"><?php echo $mjerilo['mjerila_godinaproizvodnje']; ?></td>
-            </tr>
-            <tr>
-                <td colspan="2">Власник мјерила:</td>
-                <td colspan="4"><?php echo latinicaUCirilicu($klijent['klijenti_naziv']); ?></td>
-            </tr>
-            <tr>
-                <td colspan="2">Локација мјерила:</td>
-                <td colspan="4"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_mjestoinspekcije']); ?></td>
-            </tr>
-            <tr>
-                <td colspan="2">Мјесто прегледа:</td>
-                <td colspan="4"><?php echo latinicaUCirilicu($izvjestaj['izvjestaji_mjestoinspekcije']); ?></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <!-- PRAZAN RED -->
-    <br>
-
-    <!-- VERIFIKACIJA -->
-    <p><strong>Верификација:</strong></p>
-    <div class="verifikacija-vrsta-verifikacije">
-        <p>Врста верификације:</p>
-        <?php foreach($vrsteinspekcije as $vrstainspekcije){ ?>
-        <p>
-            <input type="checkbox" <?php if($vrstainspekcije['vrsteinspekcije_id'] == $izvjestaj['izvjestaji_vrstainspekcijeid']){ echo "checked='checked'"; } ?>>
-            <?php echo latinicaUCirilicu($vrstainspekcije['vrsteinspekcije_naziv']); ?>
-        </p>
-        <?php } ?>
-    </div>
-    <div class="verifikacija-radni-uslovi">
-        <p>Радни услови:</p>
-        <p>Температура: <?php echo $izvjestaj['izvjestaji_temperatura']; ?>°C</p>
-        <p>Влажност: <?php echo $izvjestaj['izvjestaji_vlaznost']; ?>%</p>
-    </div>
-    <div class="verifikacija-republicki-zig">
-        <p>Ознака и серијски број скинутог републичког жига: <?php echo $izvjestaj["izvjestaji_skinutizig"]; ?></p>
-    </div>
-
-    <!-- PRAZAN RED -->
-    <br>
-
-    <!-- ETALON -->
-    <p><strong>Подаци о еталону:</strong></p>
-    <table cellpadding="5" cellspacing="0" width="100%">
-        <tbody>
-            <?php 
-            $izvjestaj['izvjestaji_opremazainspekciju'] = explode(',', $izvjestaj['izvjestaji_opremazainspekciju']);
-            $etalon = '';
-            foreach($izvjestaj['izvjestaji_opremazainspekciju'] as $oprema){
-                $opremazainspekciju = new singleObject;
-                $opremazainspekciju = $opremazainspekciju->fetch_single_object('opremazainspekciju', 'opremazainspekciju_id', $oprema);
-
-                    if($opremazainspekciju['opremazainspekciju_proizvodjac'] == ""){
-                        $proizvodjac = "-";
-                    }else{
-                        $proizvodjac = $opremazainspekciju['opremazainspekciju_proizvodjac'];
-                    }
-
-                    if($opremazainspekciju['opremazainspekciju_tip'] == ""){
-                        $tip = "-";
-                    }else{
-                        $tip = $opremazainspekciju['opremazainspekciju_tip'];
-                    }
-
-                    if($opremazainspekciju['opremazainspekciju_serijskibroj'] == ""){
-                        $serijskibroj = "-";
-                    }else{
-                        $serijskibroj = $opremazainspekciju['opremazainspekciju_serijskibroj'];
-                    }
-                    echo
-                    "<tr>
-                        <td>".latinicaUCirilicu($opremazainspekciju['opremazainspekciju_naziv'])."</td>
-                        <td>Произвођач: ".$proizvodjac."</td>
-                        <td>Тип: ".$tip."</td>
-                        <td>Серијски број: ".$serijskibroj."</td>
-                    </tr>";
-            }
-            ?> 
-        </tbody>
-    </table> 
-
-    <!-- PRAZAN RED -->
-    <br>
-    
-    <!-- PREGLED MJERILA -->
-    <p><strong>Преглед мјерила:</strong></p>
-    <div class="pregled-mjerila">
-        <p>Визуелни преглед: <?php if($izvjestaj['izvjestaji_mjerilocitljivo'] == 1){ echo "ДА";}else{echo "НЕ";} ?></p>
-        <p>Провјера запрљаности: <?php if($izvjestaj['izvjestaji_mjerilocisto'] == 1){ echo "ДА";}else{echo "НЕ";} ?></p>
-        <p>Провјера цјеловитости: <?php if($izvjestaj['izvjestaji_mjerilocjelovito'] == 1){ echo "ДА";}else{echo "НЕ";} ?></p>
-        <p>Провјера функционалности: <?php if($izvjestaj['izvjestaji_mjerilokablovi'] == 1){ echo "ДА";}else{echo "НЕ";} ?></p>
-    </div>
+    <?php include_once("report_intro.php"); ?>
 
     <!-- PRAZAN RED -->
     <br>
@@ -736,7 +572,7 @@ function calculateSampleStandardDeviation($array) {
     
     <h4 class="second-headline"><strong>ЗАКЉУЧАК:</strong></h4>
     <p style="text-align:justify;">Прегледом мјерила утврђено да мјерило <input type="checkbox" <?php if($finalusaglasenost == "испуњава"){ echo "checked='true'";} ?>> <strong>исуњава</strong> <input type="checkbox" <?php if($finalusaglasenost == "не испуњава"){ echo "checked='true'";}?>> <strong>не испуњава</strong> метролошке захтјеве прописане Метролошким упутством за преглед манометара за мјерење крвног притиска („Службени гласник Републике Српске“, број 9/05) и на основу члана 20. Закона о метрологији Републике Српске („Службени гласник Републике Српске“, број 132/22 и 100/25) и члана 10. Правилника о верификацији мјерила („Службени гласник Републике Српске“, број 61/14), сачињен је овај записник.</p>
-    <p style="text-align:justify;">Резултати инспекције се односе искључиво на дати предмет у тренутку инспекције. На основу Рјешења о измјени и допуни рјешења о овлашћивању тијела за верификацију мјерила број 18/1.10/393.10-03-09-25/25 од 30.12.2025. године, на мјерило је постављен републички жиг у облику наљепнице број: <?php echo $izvjestaj["izvjestaji_novizig"];?>.</p>
+    <?php include(__DIR__ . '/snippet_rjesenje_ovlascivanje.php'); ?>
 
     <br /><br /><br /><br /><br />
 

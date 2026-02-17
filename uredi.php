@@ -70,6 +70,10 @@ if ($table == 'korisnici' && !ima_permisiju('korisnici', 'uredivanje')) {
     header('Location: korisnici.php');
     exit;
 }
+if ($table == 'rjesenjazaovlascivanje' && !ima_permisiju('rjesenjazaovlascivanje', 'uredivanje')) {
+    header('Location: rjesenjaovlascivanja.php');
+    exit;
+}
 
 include_once ('includes/header.php');
 include_once ('includes/sidebar.php');
@@ -100,6 +104,9 @@ switch ($hadline) {
         break;
     case "opremuzainspekciju":
         $hadline = "opremu za inspekciju";
+        break;
+    case "rjesenjeovlascivanja":
+        $hadline = "rješenje o ovlašćivanju";
         break;
 }
 $table = isset($_GET['t']) ? $_GET['t'] : $table;
@@ -794,6 +801,12 @@ $total_column = $select->columnCount();
                 <div class="col-lg-3 d-flex flex-column mb-2">
                     <label for="izvjestaji_mjestoinspekcije">Mjesto inspekcije:</label>
                     <input type="text" name="izvjestaji_mjestoinspekcije" value="<?php echo $izvjestaj['izvjestaji_mjestoinspekcije'] ?>">
+                </div>
+
+                <!-- LOKACIJA MJERILA -->
+                <div class="col-lg-3 d-flex flex-column mb-2">
+                    <label for="izvjestaji_lokacijamjerila">Lokacija mjerila:</label>
+                    <input type="text" name="izvjestaji_lokacijamjerila" value="<?php echo isset($izvjestaj['izvjestaji_lokacijamjerila']) ? htmlspecialchars($izvjestaj['izvjestaji_lokacijamjerila']) : '' ?>">
                 </div>
 
                 <!-- METODA INSPEKCIJE -->

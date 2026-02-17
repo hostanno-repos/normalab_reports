@@ -246,6 +246,12 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         <input type="text" name="izvjestaji_mjestoinspekcije" value="">
                     </div>
 
+                    <!-- LOKACIJA MJERILA -->
+                    <div class="col-lg-3 d-flex flex-column mb-2">
+                        <label for="izvjestaji_lokacijamjerila">Lokacija mjerila:</label>
+                        <input type="text" name="izvjestaji_lokacijamjerila" value="">
+                    </div>
+
                     <!-- METODA INSPEKCIJE -->
                     <?php if ($metodainspekcije != false) { ?>
                         <div class="col-lg-3 d-flex flex-column mb-2">

@@ -68,6 +68,10 @@ if (isset($_GET['t']) && isset($_GET['o'])) {
         header('Location: korisnici.php');
         exit;
     }
+    if ($_GET['t'] == 'rjesenjazaovlascivanje' && !ima_permisiju('rjesenjazaovlascivanje', 'brisanje')) {
+        header('Location: rjesenjaovlascivanja.php');
+        exit;
+    }
     if ($_GET['t'] == 'korisnici' && (int)$_SESSION['user-type'] === 1) {
         $stmtKu = $pdo->prepare("SELECT korisnici_korisnickaulogaid FROM korisnici WHERE korisnici_id = ?");
         $stmtKu->execute([(int)$_GET['o']]);
@@ -183,6 +187,11 @@ if (isset($_GET['t']) && isset($_GET['o'])) {
             break;
         case "korisnici":
             $finalHeader = 'korisnici.php';
+            break;
+        case "rjesenjazaovlascivanje":
+            $finalHeader = 'rjesenjaovlascivanja.php';
+            $tabeleToCheck = array();
+            $idToCheck = array();
             break;
     }
 

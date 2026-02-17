@@ -110,7 +110,7 @@
         </li>
         <?php } ?>
 
-        <?php if (ima_permisiju('kontrolori', 'pregled') || ima_permisiju('metodeinspekcije', 'pregled') || ima_permisiju('vrsteinspekcije', 'pregled') || ima_permisiju('vrsteuredjaja', 'pregled') || ima_permisiju('mjernevelicine', 'pregled') || ima_permisiju('referentnevrijednosti', 'pregled')) { ?>
+        <?php if (ima_permisiju('kontrolori', 'pregled') || ima_permisiju('metodeinspekcije', 'pregled') || ima_permisiju('vrsteinspekcije', 'pregled') || ima_permisiju('vrsteuredjaja', 'pregled') || ima_permisiju('mjernevelicine', 'pregled') || ima_permisiju('referentnevrijednosti', 'pregled') || ima_permisiju('rjesenjazaovlascivanje', 'pregled')) { ?>
         <li class="nav-heading">Šifarnici</li>
         <?php } ?>
 
@@ -176,6 +176,17 @@
             } ?>" href="referentnevrijednosti.php?page=1">
                 <i class="bi bi-sliders2-vertical"></i>
                 <span>Referentne vrijednosti</span>
+            </a>
+        </li>
+        <?php } ?>
+
+        <?php if (ima_permisiju('rjesenjazaovlascivanje', 'pregled')) { ?>
+        <li class="nav-item">
+            <a class="nav-link <?php if ($file != "rjesenjaovlascivanja.php") {
+                echo "collapsed";
+            } ?>" href="rjesenjaovlascivanja.php?page=1">
+                <i class="bi bi-file-earmark-text"></i>
+                <span>Rješenja o ovlašćivanju</span>
             </a>
         </li>
         <?php } ?>

@@ -1,9 +1,6 @@
 <?php
 
-$host = "localhost";
-$database = "normalab_reports";
-$username = "root";
-$password = "";
+include_once("cred.php");
 $message = "";
 
 try {

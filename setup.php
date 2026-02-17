@@ -15,32 +15,48 @@ $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $results = array();
 
+// Tablica za evidenciju odrađenih migracija (svaka migracija se izvrši samo jednom)
+$pdo->exec("CREATE TABLE IF NOT EXISTS `setup_migrations` (
+    `migration_id` VARCHAR(128) NOT NULL PRIMARY KEY,
+    `executed_at` DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$stmtCheck = $pdo->prepare("SELECT 1 FROM `setup_migrations` WHERE `migration_id` = ? LIMIT 1");
+$stmtInsert = $pdo->prepare("INSERT INTO `setup_migrations` (`migration_id`) VALUES (?)");
+
 $migrations = array(
     array(
+        'id'   => 'korisnickeuloge_klijent',
         'name' => 'Dodavanje vrste korisnika Klijent (korisnickeuloge)',
         'sql'  => "INSERT IGNORE INTO `korisnickeuloge` (`korisnickeuloge_id`, `korisnickeuloge_naziv`, `korisnickeuloge_nivohijerarhijeid`) VALUES (5, 'Klijent', 5)"
     ),
     array(
+        'id'   => 'korisnici_lozinka_prikaz',
         'name' => 'Kolona korisnici_lozinka_prikaz (prikaz lozinke za admina)',
         'sql'  => "ALTER TABLE `korisnici` ADD COLUMN `korisnici_lozinka_prikaz` VARCHAR(255) DEFAULT NULL"
     ),
     array(
+        'id'   => 'klijenti_naziv_index',
         'name' => 'Indeks na klijenti.klijenti_naziv (pretraga/sortiranje)',
         'sql'  => "ALTER TABLE `klijenti` ADD INDEX `idx_klijenti_naziv` (`klijenti_naziv`(100))"
     ),
     array(
+        'id'   => 'korisnickeuloge_zavod',
         'name' => 'Dodavanje vrste korisnika Zavod (korisnickeuloge)',
         'sql'  => "INSERT IGNORE INTO `korisnickeuloge` (`korisnickeuloge_id`, `korisnickeuloge_naziv`, `korisnickeuloge_nivohijerarhijeid`) VALUES (6, 'Zavod', 5)"
     ),
     array(
+        'id'   => 'korisnickeuloge_superadmin',
         'name' => 'Dodavanje vrste korisnika Super administrator (korisnickeuloge)',
         'sql'  => "INSERT IGNORE INTO `korisnickeuloge` (`korisnickeuloge_id`, `korisnickeuloge_naziv`, `korisnickeuloge_nivohijerarhijeid`) VALUES (7, 'Super administrator', 1)"
     ),
     array(
+        'id'   => 'korisnici_superadmin_ljuban',
         'name' => 'Dodjela uloge Super administrator korisniku ljuban.jajcanin',
         'sql'  => "UPDATE `korisnici` SET `korisnici_korisnickaulogaid` = 7 WHERE `korisnici_username` = 'ljuban.jajcanin'"
     ),
     array(
+        'id'   => 'permisije_tablica',
         'name' => 'Tablica permisije (dodjele za Klijent i Zavod)',
         'sql'  => "CREATE TABLE IF NOT EXISTS `permisije` (
             `permisije_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -51,14 +67,44 @@ $migrations = array(
             UNIQUE KEY `permisije_uloga_sekcija_akcija` (`permisije_uloga_id`, `permisije_sekcija`, `permisije_akcija`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ),
+    array(
+        'id'   => 'izvjestaji_lokacijamjerila',
+        'name' => 'Kolona izvjestaji_lokacijamjerila (lokacija mjerila na izvještaju)',
+        'sql'  => "ALTER TABLE `izvjestaji` ADD COLUMN `izvjestaji_lokacijamjerila` VARCHAR(255) NULL DEFAULT NULL AFTER `izvjestaji_mjestoinspekcije`"
+    ),
+    array(
+        'id'   => 'rjesenjazaovlascivanje_tablica',
+        'name' => 'Tablica rjesenjazaovlascivanje (rješenja o ovlašćivanju – broj i datum za izvještaje)',
+        'sql'  => "CREATE TABLE IF NOT EXISTS `rjesenjazaovlascivanje` (
+            `rjesenjazaovlascivanje_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+            `rjesenjazaovlascivanje_broj_rjesenja` VARCHAR(128) NOT NULL,
+            `rjesenjazaovlascivanje_datum_izdavanja` DATE NOT NULL,
+            PRIMARY KEY (`rjesenjazaovlascivanje_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    ),
 );
 
 foreach ($migrations as $m) {
+    $migrationId = isset($m['id']) ? $m['id'] : null;
+    if ($migrationId !== null) {
+        $stmtCheck->execute(array($migrationId));
+        if ($stmtCheck->fetch()) {
+            $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'preskočeno (već odrađeno)');
+            continue;
+        }
+    }
     try {
         $pdo->exec($m['sql']);
+        if ($migrationId !== null) {
+            $stmtInsert->execute(array($migrationId));
+        }
         $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'OK');
     } catch (PDOException $e) {
-        if ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column') !== false || strpos($e->getMessage(), 'Duplicate key') !== false) {
+        $isDuplicate = ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column') !== false || strpos($e->getMessage(), 'Duplicate key') !== false);
+        if ($isDuplicate && $migrationId !== null) {
+            $stmtInsert->execute(array($migrationId));
+            $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'OK (već postojalo u bazi, zabilježeno)');
+        } else if ($isDuplicate) {
             $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'OK (već postoji)');
         } else {
             $results[] = array('name' => $m['name'], 'ok' => false, 'message' => $e->getMessage());
@@ -139,7 +185,7 @@ header('Content-Type: text/html; charset=utf-8');
     <ul>
         <?php foreach ($results as $r) { ?>
         <li class="<?php echo $r['ok'] ? 'ok' : 'err'; ?>">
-            <?php echo htmlspecialchars($r['name']); ?> — <?php echo $r['ok'] ? 'izvršeno' : htmlspecialchars($r['message']); ?>
+            <?php echo htmlspecialchars($r['name']); ?> — <?php echo $r['ok'] ? htmlspecialchars($r['message']) : htmlspecialchars($r['message']); ?>
         </li>
         <?php } ?>
     </ul>

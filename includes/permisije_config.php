@@ -19,6 +19,7 @@ $PERMISIJE_SEKCIJE = array(
     array('kljuc' => 'vrsteuredjaja',        'naziv' => 'Vrste uređaja'),
     array('kljuc' => 'mjernevelicine',       'naziv' => 'Mjerne veličine'),
     array('kljuc' => 'referentnevrijednosti','naziv' => 'Referentne vrijednosti'),
+    array('kljuc' => 'rjesenjazaovlascivanje', 'naziv' => 'Rješenja o ovlašćivanju'),
     array('kljuc' => 'nivoihijerarhije',     'naziv' => 'Nivoi hijerarhije'),
     array('kljuc' => 'korisnickeuloge',      'naziv' => 'Korisničke uloge'),
     array('kljuc' => 'korisnici',            'naziv' => 'Korisnici'),
