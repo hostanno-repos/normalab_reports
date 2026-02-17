@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/normalab/reports2.normalab.ba/
+    - /bin/cp -R . $DEPLOYPATH
