@@ -63,6 +63,7 @@
             $("#linkToDelete").attr("href", "ukloni.php?t="+t+"&o="+o);
             $("#deleteItem>button").attr("data-target","#deleteModal");
             $("#openReportZavod").attr('href', 'izvjestajmpdf.php?uredjaj='+m+'&izvjestaj='+o);
+            if ($("#openReportBataNovi").length) $("#openReportBataNovi").attr('href', 'izvjestajmpdfbata.php?uredjaj='+m+'&izvjestaj='+o);
         } else {
             //console.log("?");
             $("#editItem").attr("itemToEdit", "");
@@ -73,6 +74,8 @@
             $("#deleteItem").attr("itemToDelete", "");
             $("#deleteItem>button").attr("data-target","");
             $("#linkToDelete").attr("href", "");
+            $("#openReportZavod").attr("href", "");
+            if ($("#openReportBataNovi").length) $("#openReportBataNovi").attr("href", "");
         }
     });
 

@@ -153,10 +153,13 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     <?php } ?>
                     <?php if ($showPdfIzvjestaj) { ?>
                     <a onclick="kreirajOtvoriIzvjestaj()" reporttoshow="" id="openReport"><button class="btn btn-dark"
-                            data-toggle="tooltip" data-placement="bottom" title="Pdf izvještaj"><i
-                                class="bi bi-file-earmark-pdf" style="font-size:18px"></i> Pdf izvještaj</button></a>
+                            data-toggle="tooltip" data-placement="bottom" title="Pdf izvještaj - BATA"><i
+                                class="bi bi-file-earmark-pdf" style="font-size:18px"></i> Pdf izvještaj - BATA</button></a>
                     <?php } ?>
                     <?php if ($showPdfIzvjestajZavod) { ?>
+                    <a href="" id="openReportBataNovi"><button class="btn btn-dark"
+                            data-toggle="tooltip" data-placement="bottom" title="Pdf izvještaj - BATA (NOVI TEST)"><i
+                                class="bi bi-file-earmark-pdf" style="font-size:18px"></i> Pdf izvještaj - BATA (NOVI TEST)</button></a>
                     <a href="" id="openReportZavod"><button class="btn btn-dark"
                             data-toggle="tooltip" data-placement="bottom" title="Pdf izvještaj - Zavod"><i
                                 class="bi bi-file-earmark-pdf" style="font-size:18px"></i> Pdf izvještaj - Zavod</button></a>
