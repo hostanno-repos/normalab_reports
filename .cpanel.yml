@@ -1,3 +1,5 @@
+---
 deployment:
   tasks:
-    - /usr/bin/rsync -av --delete ./ /home/normalab/reports2.normalab.ba/
+    - export DEPLOYPATH=/home/normalab/reports2.normalab.ba/
+    - /bin/cp -rf . $DEPLOYPATH
