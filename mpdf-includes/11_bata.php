@@ -154,10 +154,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
                 //USAGLAŠENOST
                 /*if ($relativnagreska > round($referentnavrijednost['referentnevrijednosti_odstupanje'], 0)) {
-                    $usaglasenost = "НЕ";
+                    $usaglasenost = "NE";
                     $finalusaglasenost = "не испуњава";
                 } else if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-") {
-                    $usaglasenost = "ДА";
+                    $usaglasenost = "DA";
                 } else {
                     $usaglasenost = "-";
                 }
@@ -201,7 +201,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>ДА</td>
+                        <td>DA</td>
                     </tr>-->
                 <?php }
                 $prvomjerenje = "-";
@@ -296,10 +296,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
 
                 //USAGLAŠENOST
                 /*if ($relativnagreska > round($referentnavrijednost['referentnevrijednosti_odstupanje'], 0)) {
-                    $usaglasenost = "НЕ";
+                    $usaglasenost = "NE";
                     $finalusaglasenost = "не испуњава";
                 } else if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-") {
-                    $usaglasenost = "ДА";
+                    $usaglasenost = "DA";
                 } else {
                     $usaglasenost = "-";
                 }
@@ -332,7 +332,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                         <!--<td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>НЕ</td>-->
+                        <td>NE</td>-->
                     </tr>
                 <?php } else { ?>
                     <!--<tr class="red-bez-mjerenja">
@@ -344,7 +344,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>ДА</td>
+                        <td>DA</td>
                     </tr>-->
                 <?php }
                 $prvomjerenje = "-";
@@ -386,10 +386,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 <td style="text-align: center;">
                     <?php
                         if ($max_max1 !== null && $max_max1 > 5 || $max_max1 == null) {
-                            echo "НЕ";
+                            echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
-                            echo "ДА";
+                            echo "DA";
                         }
                     ?>
                 </td>
@@ -412,10 +412,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 <td style="text-align: center;">
                     <?php
                         if ($max_max2 !== null && $max_max2 > 4 || $max_max2 == null) {
-                            echo "НЕ";
+                            echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
-                            echo "ДА";
+                            echo "DA";
                         }
                     ?>
                 </td>
@@ -438,10 +438,10 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 <td style="text-align: center;">
                     <?php
                         if ($max_max3 !== null && $max_max3 > 4 || $max_max3 == null) {
-                            echo "НЕ";
+                            echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
-                            echo "ДА";
+                            echo "DA";
                         }
                     ?>
                 </td>
@@ -456,7 +456,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 ?>
                 <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] == null){ echo "-";}else{echo $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"];} ?></td>
                 <td style="text-align: center;">10</td>
-                <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10 || $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] == null){ echo "НЕ"; $finalusaglasenost = "не испуњава";}else{ echo "ДА";} ?></td>
+                <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10 || $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] == null){ echo "NE"; $finalusaglasenost = "не испуњава";}else{ echo "DA";} ?></td>
             </tr>
         </tbody>
     </table>

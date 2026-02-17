@@ -164,10 +164,10 @@ function calculateSampleStandardDeviation($array) {
 
                 //USAGLAŠENOST
                 /*if ($relativnagreska > round($referentnavrijednost['referentnevrijednosti_odstupanje'], 0)) {
-                    $usaglasenost = "НЕ";
+                    $usaglasenost = "NE";
                     $finalusaglasenost = "не испуњава";
                 } else if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-") {
-                    $usaglasenost = "ДА";
+                    $usaglasenost = "DA";
                 } else {
                     $usaglasenost = "-";
                 }
@@ -302,10 +302,10 @@ function calculateSampleStandardDeviation($array) {
 
                 //USAGLAŠENOST
                 /*if ($relativnagreska > round($referentnavrijednost['referentnevrijednosti_odstupanje'], 0)) {
-                    $usaglasenost = "НЕ";
+                    $usaglasenost = "NE";
                     $finalusaglasenost = "не испуњава";
                 } else if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-") {
-                    $usaglasenost = "ДА";
+                    $usaglasenost = "DA";
                 } else {
                     $usaglasenost = "-";
                 }
@@ -338,7 +338,7 @@ function calculateSampleStandardDeviation($array) {
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>НЕ</td>
+                        <td>NE</td>
                     </tr>
                 <?php } else { ?>
                     <!--<tr class="red-bez-mjerenja">
@@ -350,7 +350,7 @@ function calculateSampleStandardDeviation($array) {
                         <td>-</td>
                         <td>-</td>
                         <td>-</td>
-                        <td>ДА</td>
+                        <td>DA</td>
                     </tr>-->
                 <?php }
                 $prvomjerenje = "-";
@@ -555,10 +555,10 @@ function calculateSampleStandardDeviation($array) {
                 <td style="text-align: center;">
                     <?php
                         if ($max_max1 !== null && $max_max1 > 5 || $max_max1 == null) {
-                            echo "НЕ";
+                            echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
-                            echo "ДА";
+                            echo "DA";
                         }
                     ?>
                 </td>
@@ -580,10 +580,10 @@ function calculateSampleStandardDeviation($array) {
                 <td style="text-align: center;">
                     <?php
                         if ($max_max3 !== null && $max_max3 > 6 || $max_max3 == null) {
-                            echo "НЕ";
+                            echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
-                            echo "ДА";
+                            echo "DA";
                         }
                     ?>
                 </td>
@@ -592,13 +592,13 @@ function calculateSampleStandardDeviation($array) {
                 <td>Испитивање вентила брзог испуста</td>
                 <td style="text-align: center;"><?php echo $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] ?></td>
                 <td style="text-align: center;">10</td>
-                <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10){ echo "НЕ"; $finalusaglasenost = "не испуњава";}else{ echo "ДА";} ?></td>
+                <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10){ echo "NE"; $finalusaglasenost = "не испуњава";}else{ echo "DA";} ?></td>
             </tr>
             <tr>
                 <td>Поновљивост</td>
                 <td style="text-align: center;"><?php echo max(array($devijacijaSistolicni, $devijacijaDistolicni)); ?></td>
                 <td style="text-align: center;">3</td>
-                <td style="text-align: center;"><?php if(max(array($devijacijaSistolicni, $devijacijaDistolicni)) > 3){ echo "НЕ"; $finalusaglasenost = "не испуњава";}else{ echo "ДА";} ?></td>
+                <td style="text-align: center;"><?php if(max(array($devijacijaSistolicni, $devijacijaDistolicni)) > 3){ echo "NE"; $finalusaglasenost = "не испуњава";}else{ echo "DA";} ?></td>
             </tr>
         </tbody>
     </table>
