@@ -83,18 +83,18 @@ function calculateSampleStandardDeviation($array) {
     <table cellpadding="5" cellspacing="0" width="100%" class="">
         <thead>
             <tr>
-                <th rowspan="2" width="150">Притисак [mmHg]</th>
-                <th colspan="2">1. циклус</th>
-                <th colspan="2">2. циклус</th>
-                <th colspan="2">Одступање</th>
+                <th rowspan="2" width="150">Priitisak [mmHg]</th>
+                <th colspan="2">1. ciklus</th>
+                <th colspan="2">2. ciklus</th>
+                <th colspan="2">Odstupanje</th>
             </tr>
             <tr>
-                <th>растућа</th>
-                <th>опадајућа</th>
-                <th>растућа</th>
-                <th>опадајућа</th>
-                <th>растућа</th>
-                <th>опадајућа</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
             </tr>
         </thead>
         <tbody>
@@ -233,15 +233,15 @@ function calculateSampleStandardDeviation($array) {
     <table cellpadding="5" cellspacing="0" width="100%" class="">
         <thead>
             <tr>
-                <th rowspan="2">Притисак [mmHg]</th>
+                <th rowspan="2">Priitisak [mmHg]</th>
                 <th colspan="1">p1 [mmHg]</th>
                 <th colspan="1">p2 [mmHg]</th>
-                <th rowspan="2">Разлика p1-p2 [mmHg]</th>
-                <th rowspan="2">Стопа испуштања притиска [mmHg/min]</th>
+                <th rowspan="2">Razlika p1-p2 [mmHg]</th>
+                <th rowspan="2">Stopa ispuštanja priitiska [mmHg/min]</th>
             </tr>
             <tr>
-                <th>1. очитавање</th>
-                <th>Очитавање након 5 минута</th>
+                <th>1. očitavanje</th>
+                <th>Očitavanje nakon 5 minuta</th>
             </tr>
         </thead>
         <tbody>
@@ -376,7 +376,7 @@ function calculateSampleStandardDeviation($array) {
     <table cellpadding="5" cellspacing="0" width="100%" class="">
         <thead>
             <tr>
-                <th>Број мјерења</th>
+                <th>Broj mjerenja</th>
                 <th>1</th>
                 <th>2</th>
                 <th>3</th>
@@ -441,7 +441,7 @@ function calculateSampleStandardDeviation($array) {
                 }
             ?>
             <tr>
-                <td width="100">Систолички притисак [mmHG]</td>
+                <td width="100">Sistolički priitisak [mmHG]</td>
                 <td><?php echo $rezultatimjerenja_141_520[0]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_141_520[1]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_141_520[2]['rezultatimjerenja_rezultatmjerenja'] ?></td>
@@ -454,7 +454,7 @@ function calculateSampleStandardDeviation($array) {
                 <td><?php echo $rezultatimjerenja_141_520[9]['rezultatimjerenja_rezultatmjerenja'] ?></td>
             </tr>
             <tr>
-                <td width="100">Дистолички притисак [mmHG]</td>
+                <td width="100">Dijastolički priitisak [mmHG]</td>
                 <td><?php echo $rezultatimjerenja_141_521[0]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_141_521[1]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_141_521[2]['rezultatimjerenja_rezultatmjerenja'] ?></td>
@@ -469,7 +469,7 @@ function calculateSampleStandardDeviation($array) {
         </tbody>
         <thead>
             <tr>
-                <th>Број мјерења</th>
+                <th>Broj mjerenja</th>
                 <th>11</th>
                 <th>12</th>
                 <th>13</th>
@@ -484,7 +484,7 @@ function calculateSampleStandardDeviation($array) {
         </thead>
         <tbody>
             <tr>
-                <td width="100">Систолички притисак [mmHG]</td>
+                <td width="100">Sistolički priitisak [mmHG]</td>
                 <td><?php echo $rezultatimjerenja_142_522[0]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_142_522[1]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_142_522[2]['rezultatimjerenja_rezultatmjerenja'] ?></td>
@@ -497,7 +497,7 @@ function calculateSampleStandardDeviation($array) {
                 <td><?php echo $rezultatimjerenja_142_522[9]['rezultatimjerenja_rezultatmjerenja'] ?></td>
             </tr>
             <tr>
-                <td width="100">Дистолички притисак [mmHG]</td>
+                <td width="100">Dijastolički priitisak [mmHG]</td>
                 <td><?php echo $rezultatimjerenja_142_523[0]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_142_523[1]['rezultatimjerenja_rezultatmjerenja'] ?></td>
                 <td><?php echo $rezultatimjerenja_142_523[2]['rezultatimjerenja_rezultatmjerenja'] ?></td>
@@ -515,9 +515,9 @@ function calculateSampleStandardDeviation($array) {
     <br />
     <?php $devijacijaSistolicni = round(calculateSampleStandardDeviation($niz_141_520_142_522),2); ?>
     <?php $devijacijaDistolicni = round(calculateSampleStandardDeviation($niz_141_521_142_523),2); ?>
-    <p>Грешка систоличког притиска [mmHg]: <?php echo $devijacijaSistolicni ?></p>
-    <p>Грешка дистоличког притиска [mmHg]: <?php echo $devijacijaDistolicni ?></p>
-    <p>Постављена вриједност: <?php echo $rezultatimjerenja_142_523[10]['rezultatimjerenja_rezultatmjerenja'] ?></p>
+    <p>Greška sistoličkog priitiska [mmHg]: <?php echo $devijacijaSistolicni ?></p>
+    <p>Greška dijastoličkog priitiska [mmHg]: <?php echo $devijacijaDistolicni ?></p>
+    <p>Postavljena vrijednost: <?php echo $rezultatimjerenja_142_523[10]['rezultatimjerenja_rezultatmjerenja'] ?></p>
 
     <br />
 
@@ -532,14 +532,14 @@ function calculateSampleStandardDeviation($array) {
         <thead>
             <tr>
                 <th></th>
-                <th>Максимално одступање</th>
-                <th>Максимално дозвољено одступање</th>
-                <th>Задовољава</th>
+                <th>Maksimalno odstupanje</th>
+                <th>Maksimalno dozvoljeno odstupanje</th>
+                <th>Zadovoljava</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Тачност показивања</td>
+                <td>Tačnost pokazivanja</td>
                 <td style="text-align: center;">
                     <?php
                         if (!empty($max1)) {
@@ -564,7 +564,7 @@ function calculateSampleStandardDeviation($array) {
                 </td>
             </tr>
             <tr>
-                <td>Испитивање цурења зрака</td>
+                <td>Ispitivanje curenja zraka</td>
                 <td style="text-align: center;">
                     <?php
                         if (!empty($max3)) {
@@ -589,13 +589,13 @@ function calculateSampleStandardDeviation($array) {
                 </td>
             </tr>
             <tr>
-                <td>Испитивање вентила брзог испуста</td>
+                <td>Ispitivanje ventila brzog ispusta</td>
                 <td style="text-align: center;"><?php echo $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] ?></td>
                 <td style="text-align: center;">10</td>
                 <td style="text-align: center;"><?php if($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10){ echo "NE"; $finalusaglasenost = "не испуњава";}else{ echo "DA";} ?></td>
             </tr>
             <tr>
-                <td>Поновљивост</td>
+                <td>Ponovljivost</td>
                 <td style="text-align: center;"><?php echo max(array($devijacijaSistolicni, $devijacijaDistolicni)); ?></td>
                 <td style="text-align: center;">3</td>
                 <td style="text-align: center;"><?php if(max(array($devijacijaSistolicni, $devijacijaDistolicni)) > 3){ echo "NE"; $finalusaglasenost = "не испуњава";}else{ echo "DA";} ?></td>

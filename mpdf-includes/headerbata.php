@@ -29,7 +29,7 @@
     </div>
     <div class="header-info" style="width: 33%;float: right;">
         <p style="font-family: 'Times New Roman', Times, serif;font-size: 11px;text-align: right;margin:0;">"NormaLab" d.o.o. Banja Luka</p>
-        <p style="font-family: 'Times New Roman', Times, serif;font-size: 11px;text-align: right;margin:0;">Srpska 99, II sprat, 8б</p>
+        <p style="font-family: 'Times New Roman', Times, serif;font-size: 11px;text-align: right;margin:0;">Srpska 99, II sprat, 8b</p>
         <p style="font-family: 'Times New Roman', Times, serif;font-size: 11px;text-align: right;margin:0;">office@normalab.ba</p>
         <p style="font-family: 'Times New Roman', Times, serif;font-size: 11px;text-align: right;margin:0;">+387 66 76 67 81</p>
     </div>

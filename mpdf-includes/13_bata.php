@@ -62,21 +62,21 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>
             <tr>
-                <th rowspan="2">Притисак [mmHg]</th>
-                <th colspan="2">1. циклус</th>
-                <th colspan="2">2. циклус</th>
-                <th colspan="2">Одступање</th>
-                <th colspan="2">Хистерезис</th>
+                <th rowspan="2">Priitisak [mmHg]</th>
+                <th colspan="2">1. ciklus</th>
+                <th colspan="2">2. ciklus</th>
+                <th colspan="2">Odstupanje</th>
+                <th colspan="2">Histerezis</th>
             </tr>
             <tr>
-                <th>растућа</th>
-                <th>опадајућа</th>
-                <th>растућа</th>
-                <th>опадајућа</th>
-                <th>растућа</th>
-                <th>опадајућа</th>
-                <th>1. циклус</th>
-                <th>2. циклус</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
+                <th>rastuća</th>
+                <th>opadajuća</th>
+                <th>1. ciklus</th>
+                <th>2. ciklus</th>
             </tr>
         </thead>
         <tbody>
@@ -217,7 +217,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <br /><br /><br />
 
     <!-- #33 Ispitivanje curenja zraka u pneumatskom sistemu -->
-    <p style="text-align:center;">Испитивање цурења зрака у пнеуматском систему</p>
+    <p style="text-align:center;">Ispitivanje curenja zraka u pneutmaskom sistemu</p>
     <?php
     // MJERNA VELIČINA
     $mjernavelicina = new singleObject;
@@ -229,15 +229,15 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <table cellpadding="5" cellspacing="0" width="100%" class="">
         <thead>
             <tr>
-                <th rowspan="2">Притисак [mmHg]</th>
+                <th rowspan="2">Priitisak [mmHg]</th>
                 <th colspan="1">p1 [mmHg]</th>
                 <th colspan="1">p2 [mmHg]</th>
-                <th rowspan="2">Разлика p1-p2 [mmHg]</th>
-                <th rowspan="2">Стопа испуштања притиска [mmHg/min]</th>
+                <th rowspan="2">Razlika p1-p2 [mmHg]</th>
+                <th rowspan="2">Stopa ispuštanja priitiska [mmHg/min]</th>
             </tr>
             <tr>
-                <th>1. очитавање</th>
-                <th>Очитавање након 5 минута</th>
+                <th>1. očitavanje</th>
+                <th>Očitavanje nakon 5 minuta</th>
             </tr>
         </thead>
         <tbody>
@@ -355,14 +355,14 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
         <thead>
             <tr>
                 <th></th>
-                <th>Максимално одступање</th>
-                <th>Максимално дозвољено одступање</th>
-                <th>Задовољава</th>
+                <th>Maksimalno odstupanje</th>
+                <th>Maksimalno dozvoljeno odstupanje</th>
+                <th>Zadovoljava</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Тачност показивања</td>
+                <td>Tačnost pokazivanja</td>
                 <td style="text-align: center;">
                     <?php
                         if (!empty($max1)) {
@@ -387,7 +387,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 </td>
             </tr>
             <tr>
-                <td>Хистерезис</td>
+                <td>Histerezis</td>
                 <td style="text-align: center;">
                     <?php
                         if (!empty($max2)) {
@@ -412,7 +412,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 </td>
             </tr>
             <tr>
-                <td>Испитивање цурења зрака</td>
+                <td>Ispitivanje curenja zraka</td>
                 <td style="text-align: center;">
                     <?php
                         if (!empty($max3)) {
@@ -437,7 +437,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
                 </td>
             </tr>
             <tr>
-                <td>Испитивање вентила брзог испуста</td>
+                <td>Ispitivanje ventila brzog ispusta</td>
                 <?php
                 
                 $rezultatmjerenja_ = new allResultsWithSort;
