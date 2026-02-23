@@ -551,10 +551,10 @@ function calculateSampleStandardDeviation($array) {
                         }
                     ?>
                 </td>
-                <td style="text-align: center;">5</td>
+                <td style="text-align: center;">3</td>
                 <td style="text-align: center;">
                     <?php
-                        if ($max_max1 !== null && $max_max1 > 5 || $max_max1 == null) {
+                        if ($max_max1 !== null && $max_max1 > 3 || $max_max1 == null) {
                             echo "NE";
                             $finalusaglasenost = "не испуњава";
                         } else {
