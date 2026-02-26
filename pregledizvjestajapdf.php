@@ -1406,7 +1406,7 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
     $pdf->Cell(40, 5, (count($max1) > 0 ? number_format((float) max($max1), 2, '.', '') : '-'), 'L,T,R,B', 0, 'C', 0);
     if($vrstauredjaja['vrsteuredjaja_id'] == 49 || $vrstauredjaja['vrsteuredjaja_id'] == 50 || $vrstauredjaja['vrsteuredjaja_id'] == 11 || $vrstauredjaja['vrsteuredjaja_id'] == 12 || $vrstauredjaja['vrsteuredjaja_id'] == 13 || $vrstauredjaja['vrsteuredjaja_id'] == 14){
         $pdf->Cell(60, 5, "3", 'L,T,R,B', 0, 'C', 0);
-        if (max($max1) > 3) {
+        if (count($max1) === 0 || max($max1) > 3) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {
@@ -1414,7 +1414,7 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         }
     }else{
         $pdf->Cell(60, 5, "4", 'L,T,R,B', 0, 'C', 0);
-        if (max($max1) > 4) {
+        if (count($max1) === 0 || max($max1) > 4) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {
@@ -1427,7 +1427,7 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         $pdf->Cell(50, 5, "Histerezis", 'L,T,R,B', 0, 'C', 1);
         $pdf->Cell(40, 5, (count($max2) > 0 ? number_format((float) max($max2), 2, '.', '') : '-'), 'L,T,R,B', 0, 'C', 0);
         $pdf->Cell(60, 5, "4", 'L,T,R,B', 0, 'C', 0);
-        if (max($max2) > 4) {
+        if (count($max2) === 0 || max($max2) > 4) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {
@@ -1453,7 +1453,7 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
 
     if($vrstauredjaja['vrsteuredjaja_id'] == 49 || $vrstauredjaja['vrsteuredjaja_id'] == 50){
         $pdf->Cell(60, 5, "6", 'L,T,R,B', 0, 'C', 0);
-        if (max($max3) > 6) {
+        if (!isset($max3) || count($max3) === 0 || max($max3) > 6) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {
@@ -1461,7 +1461,7 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         }
     }else{
         $pdf->Cell(60, 5, "4", 'L,T,R,B', 0, 'C', 0);
-        if (max($max3) > 4) {
+        if (!isset($max3) || count($max3) === 0 || max($max3) > 4) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {

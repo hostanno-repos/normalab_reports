@@ -8,6 +8,9 @@
         $o = "";
         $i = "";
     }
+    if (!isset($itemToSelect)) {
+        $itemToSelect = "";
+    }
 
     ?>
 

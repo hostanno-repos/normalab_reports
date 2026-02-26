@@ -3,6 +3,9 @@
 if (!isset($_POST['username']) && !isset($_POST['password']) && !isset($_POST['edit_izvjestaji'])) {
 
     global $editString;
+    $editString = "";
+    $nazivTabele = "";
+    $objectId = null;
 
     //GET UTM PARAMETERS
     $getCount = 0;
@@ -21,7 +24,8 @@ if (!isset($_POST['username']) && !isset($_POST['password']) && !isset($_POST['e
     $i = 1;
     foreach ($_POST as $key => $value) {
         if (strpos($key, 'edit') !== false) {
-            $nazivTabele = explode("_", $key)[1];
+            $parts = explode("_", $key, 2);
+            $nazivTabele = isset($parts[1]) ? trim($parts[1]) : "";
             $i++;
         } else {
             if (explode("_", $key)[1] == "id") {
@@ -47,6 +51,8 @@ if (!isset($_POST['username']) && !isset($_POST['password']) && !isset($_POST['e
         }
     }
 
+    // Izvršavaj UPDATE samo ako imamo valjani naziv tabele i SET dio (izbjegava SQL grešku "near ''")
+    if ($nazivTabele !== "" && $editString !== "" && $objectId !== null) {
     $queryColumns = $pdo->prepare("DESCRIBE " . $nazivTabele);
     $queryColumns->execute();
     $columnNames = $queryColumns->fetchAll(PDO::FETCH_COLUMN);
@@ -76,6 +82,7 @@ if (!isset($_POST['username']) && !isset($_POST['password']) && !isset($_POST['e
     //print_r($query);
     //die();
     $query->execute();
+    }
 
 }
 
