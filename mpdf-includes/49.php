@@ -1,6 +1,6 @@
 <?php
 
-include_once ('reports_head.php')
+include_once ('reports_head.php');
 
 function calculateSampleStandardDeviation($array) {
     $count = count($array);
