@@ -36,6 +36,8 @@ include_once ('reports_head.php')
     //REFERENTNE VRIJEDNOSTI
     $referentnevrijednosti = new allObjectsBy;
     $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    // Temperatura zraka koristi mjernu veličinu 17 – za nju treba 1 decimalu za dozvoljeno odstupanje
+    $mjernaVelicinaID = 17;
     ?>
     <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
         <thead>

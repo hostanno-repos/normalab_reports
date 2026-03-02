@@ -62,7 +62,8 @@
     if(isset($mjernaVelicinaID)){
         if($mjernaVelicinaID == 11){
             $tacnost = 3;
-        }else if($mjernaVelicinaID == 8 || $mjernaVelicinaID == 18 || $mjernaVelicinaID == 28){
+        }else if($mjernaVelicinaID == 8 || $mjernaVelicinaID == 18 || $mjernaVelicinaID == 28 || $mjernaVelicinaID == 17){
+            // Za mjerne veličine 8, 17, 18, 28 dozvoljeno odstupanje zaokružujemo na 1 decimalu
             $tacnost = 1;
         }else{
             $tacnost = 0;
