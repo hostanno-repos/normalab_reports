@@ -211,9 +211,7 @@ include_once ('reports_head.php')
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 21,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Маса (0-2 [kg])</p>
 
@@ -258,9 +256,7 @@ include_once ('reports_head.php')
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 22,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Маса (0-10 [kg])</p>
 

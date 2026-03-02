@@ -242,9 +242,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 21,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Masa (0-2 [kg])</p>
 
@@ -289,9 +287,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 22,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Masa (0-10 [kg])</p>
 
