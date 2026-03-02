@@ -44,7 +44,8 @@
             window.location.replace($("#openReport").attr("reportToShow"));
         }
               }
-          $(".selectItemButton").click(function () {
+          // Delegacija događaja da radi i za dinamički učitane redove (npr. nakon pretrage izvještaja)
+          $(document).on("click", ".selectItemButton", function () {
           if ($(this)[0].checked == true) {
             //console.log("!");
             $(".selectedRow").removeClass("selectedRow").prop('checked',false);
