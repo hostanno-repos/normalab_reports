@@ -14,6 +14,11 @@ if (isset($mjernaVelicinaID)) {
 $tacnost = $rezultati_mjerenja_odstupanje_decimals;
 $finalusaglasenost = 'испуњава';
 
+// Relativna vlažnost u inkubatoru (mj. veličina 20):
+// ako su sva tri mjerenja "-" želimo red sa "-" i usaglašenost DA,
+// ali samo za tu mjernu veličinu
+$isRelHum20 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 20;
+
 foreach ($referentnevrijednosti as $referentnavrijednost) {
     include __DIR__ . '/../includes/rezultati_mjerenja_logika.php';
 
@@ -21,6 +26,12 @@ foreach ($referentnevrijednosti as $referentnavrijednost) {
         $finalusaglasenost = 'не испуњава';
     }
     $usaglasenostCyr = ($usaglasenost === 'DA') ? 'ДА' : (($usaglasenost === 'NE') ? 'НЕ' : $usaglasenost);
+
+    // Posebna obrada: relativna vlažnost (20) i sva tri mjerenja "-"
+    if ($isRelHum20 && $prvomjerenje === '-' && $drugomjerenje === '-' && $trecemjerenje === '-') {
+        $usaglasenost = 'DA';
+        $usaglasenostCyr = 'ДА';
+    }
 
     if ($prvomjerenje !== '-' && $prvomjerenje !== '--' && $drugomjerenje !== '-' && $drugomjerenje !== '--' && $trecemjerenje !== '-' && $trecemjerenje !== '--') { ?>
         <tr>
@@ -45,6 +56,18 @@ foreach ($referentnevrijednosti as $referentnavrijednost) {
             <td style="text-align:center;">-</td>
             <td style="text-align:center;">-</td>
             <td style="text-align:center;"><?php if(isset($pismo) && $pismo == "LAT"){echo "NE";}else{echo "НЕ"; } ?></td>
+        </tr>
+    <?php } elseif ($isRelHum20 && $prvomjerenje === '-' && $drugomjerenje === '-' && $trecemjerenje === '-') { ?>
+        <tr>
+            <td style="text-align:center;"><?php echo round($referentnavrijednost['referentnevrijednosti_referentnavrijednost'], 1) ?></td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;"><?php echo round($referentnavrijednost['referentnevrijednosti_odstupanje'], $tacnost) ?></td>
+            <td style="text-align:center;"><?php if(isset($pismo) && $pismo == "LAT"){echo "DA";}else{echo "ДА"; } ?></td>
         </tr>
     <?php } else { ?>
         <!--<tr>

@@ -71,8 +71,14 @@
     }else{
          $tacnost = 0;
     }
+
+    // Posebna logika za kiseonik u inkubatoru (mj. veličina 19):
+    // sva tri mjerenja "-" => red sa "-" i usaglašenost DA
+    $isO2_19 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 19;
     
-    if (($prvomjerenje == "--" && $drugomjerenje == "--" && $trecemjerenje == "--") || 
+    if ($isO2_19 && $prvomjerenje == "-" && $drugomjerenje == "-" && $trecemjerenje == "-") {
+        if(isset($pismo) && $pismo == "LAT"){$usaglasenost = "DA";}else{$usaglasenost = "ДА"; };
+    } elseif (($prvomjerenje == "--" && $drugomjerenje == "--" && $trecemjerenje == "--") || 
         ($apsolutnagreska > round($referentnavrijednost['referentnevrijednosti_odstupanje'], $tacnost))) {
         if(isset($pismo) && $pismo == "LAT"){$usaglasenost = "NE";}else{$usaglasenost = "НЕ"; };
         //$usaglasenost = "НЕ";
@@ -113,6 +119,18 @@
             <td style="text-align:center;">-</td>
             <td style="text-align:center;">-</td>
             <td style="text-align:center;"><?php if(isset($pismo) && $pismo == "LAT"){echo "NE";}else{echo "НЕ"; } ?></td>
+        </tr>
+    <?php } else if($isO2_19 && $prvomjerenje == "-" && $drugomjerenje == "-" && $trecemjerenje == "-") { ?>
+        <tr>
+            <td style="text-align:center;"><?php echo round($referentnavrijednost['referentnevrijednosti_referentnavrijednost'], 1) ?></td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;">-</td>
+            <td style="text-align:center;"><?php echo round($referentnavrijednost['referentnevrijednosti_odstupanje'], $tacnost) ?></td>
+            <td style="text-align:center;"><?php echo $usaglasenost ?></td>
         </tr>
     <?php } else { ?>
         <!--NE ISPISUJEMO NIŠTA-->
