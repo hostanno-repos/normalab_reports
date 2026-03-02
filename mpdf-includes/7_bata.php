@@ -59,9 +59,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 17,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Temperatura zraka</p>
 
@@ -106,9 +104,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 18,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Temperatura kože</p>
 
@@ -156,9 +152,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 19,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Kiseonik</p>
 
@@ -203,9 +197,7 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     $svirezultati = new allObjectsBy2;
     $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 20,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
 
-    if(count($svirezultati) == 0){
-
-    }else{ ?>
+    if(true){ ?>
 
     <p style="text-align:center;">Relativna vlažnost</p>
 
