@@ -17,6 +17,23 @@ $mjerila = new allObjects;
 $mjerila = $mjerila->fetch_all_objects("mjerila", "mjerila_id", "DESC");
 $mjerilo = new singleObject;
 $mjerilo = $mjerilo->fetch_single_object("mjerila", "mjerila_id", $_GET['mjerilo']);
+// Jedan izvor istine: mapa vrsta uređaja → metode inspekcije (RU-01 … RU-12)
+$vrstaUredjajaId = (int) ($mjerilo['mjerila_vrstauredjajaid'] ?? 0);
+$metodaInspekcijeZaVrstu = null;
+switch ($vrstaUredjajaId) {
+    case 1: $metodaInspekcijeZaVrstu = 1; break;   // EKG → RU-01
+    case 2: $metodaInspekcijeZaVrstu = 2; break;   // Pacijent monitor → RU-02
+    case 3: $metodaInspekcijeZaVrstu = 3; break;   // Defibrilator → RU-03
+    case 4: $metodaInspekcijeZaVrstu = 4; break;   // Terapeutski ultrazvuk → RU-04
+    case 5: $metodaInspekcijeZaVrstu = 5; break;   // Anesteziološka mašina → RU-06
+    case 6: $metodaInspekcijeZaVrstu = 6; break;   // Infuzomat → RU-05
+    case 7: $metodaInspekcijeZaVrstu = 7; break;   // Inkubator → RU-07
+    case 8: $metodaInspekcijeZaVrstu = 6; break;   // Perfuzor → RU-05
+    case 9: $metodaInspekcijeZaVrstu = 5; break;   // Respirator → RU-06
+    case 10: $metodaInspekcijeZaVrstu = 8; break;  // Dijalizni uređaj → RU-08
+    case 11: case 12: case 13: case 14: case 49: case 50: $metodaInspekcijeZaVrstu = 9; break; // Krvni pritisak → RU-09
+    case 52: $metodaInspekcijeZaVrstu = 10; break; // Neautomatska vaga → RU-12
+}
 $metodeinspekcije = new allObjects;
 $metodeinspekcije = $metodeinspekcije->fetch_all_objects("metodeinspekcije", "metodeinspekcije_id", "ASC");
 $vrsteuredjaja = new allObjects;
@@ -122,67 +139,15 @@ $ovagodinaBrojac['brojacirn_godina'] = substr( $ovagodinaBrojac['brojacirn_godin
                 <!-- VRSTA INSPEKCIJE -->
                 <div class="col-lg-3 d-flex flex-column mb-2">
                     <label for="radninalozi_metodainspekcijeid">Metoda inspekcije:</label>
-                    <input type="number" name="radninalozi_metodainspekcijeid" value="<?php 
-                    switch ($mjerilo['mjerila_vrstauredjajaid']){
-                        case 1:
-                            echo 1;
-                            break;
-                        case 2:
-                            echo 2;
-                            break;
-                        case 3:
-                            echo 3;
-                            break;
-                        case 4:
-                            echo 5;
-                            break;
-                        case 5:
-                            echo 5;
-                            break;
-                        case 6:
-                            echo 6;
-                            break;
-                        case 7:
-                            echo 7;
-                            break;
-                        case 8:
-                            echo 6;
-                            break;
-                        case 9:
-                            echo 5;
-                            break;
-                        case 10:
-                            echo 8;
-                            break;
-                        case 11:
-                            echo 9;
-                            break;
-                        case 12:
-                            echo 9;
-                            break;
-                        case 13:
-                            echo 9;
-                            break;
-                        case 14:
-                            echo 9;
-                            break;
-                    }
-                    ?>" hidden>
+                    <input type="number" name="radninalozi_metodainspekcijeid" value="<?php echo $metodaInspekcijeZaVrstu !== null ? (int) $metodaInspekcijeZaVrstu : ''; ?>" hidden>
                     <select name="" id="" class="selectElement_" disabled>
                         <option value=""></option>
                         <?php foreach ($metodeinspekcije as $metodainspekcije) { ?>
-                            <option value="<?php echo $metodainspekcije['metodeinspekcije_id'] ?>" <?php 
-                                if($metodainspekcije['metodeinspekcije_id'] == 1 && $mjerilo['mjerila_vrstauredjajaid'] == 1){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 2 && $mjerilo['mjerila_vrstauredjajaid'] == 2){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 3 && $mjerilo['mjerila_vrstauredjajaid'] == 3){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 4 && $mjerilo['mjerila_vrstauredjajaid'] == 4){ echo "selected";}
-                                else if(($metodainspekcije['metodeinspekcije_id'] == 5 && $mjerilo['mjerila_vrstauredjajaid'] == 5) || 
-                                        ($metodainspekcije['metodeinspekcije_id'] == 5 && $mjerilo['mjerila_vrstauredjajaid'] == 9)){ echo "selected";}
-                                else if(($metodainspekcije['metodeinspekcije_id'] == 6 && $mjerilo['mjerila_vrstauredjajaid'] == 6) || 
-                                        ($metodainspekcije['metodeinspekcije_id'] == 6 && $mjerilo['mjerila_vrstauredjajaid'] == 8)){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 7 && $mjerilo['mjerila_vrstauredjajaid'] == 7){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 8 && $mjerilo['mjerila_vrstauredjajaid'] == 10){ echo "selected";}
-                                else if($metodainspekcije['metodeinspekcije_id'] == 9 && ($mjerilo['mjerila_vrstauredjajaid'] == 11 || $mjerilo['mjerila_vrstauredjajaid'] == 12 || $mjerilo['mjerila_vrstauredjajaid'] == 13 || $mjerilo['mjerila_vrstauredjajaid'] == 14 || $mjerilo['mjerila_vrstauredjajaid'] == 49 || $mjerilo['mjerila_vrstauredjajaid'] == 50)){ echo "selected";} ?>>
+                            <option value="<?php echo $metodainspekcije['metodeinspekcije_id'] ?>" <?php
+                                if ($metodaInspekcijeZaVrstu !== null && (int) $metodainspekcije['metodeinspekcije_id'] === $metodaInspekcijeZaVrstu) {
+                                    echo 'selected';
+                                }
+                            ?>>
                                 <?php echo $metodainspekcije['metodeinspekcije_naziv'] ?>
                             </option>
                         <?php } ?>
