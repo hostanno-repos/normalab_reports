@@ -12,7 +12,9 @@ if (isset($mjernaVelicinaID)) {
     $rezultati_mjerenja_odstupanje_decimals = 0;
 }
 $tacnost = $rezultati_mjerenja_odstupanje_decimals;
-$finalusaglasenost = 'испуњава';
+if (!isset($finalusaglasenost)) {
+    $finalusaglasenost = 'испуњава';
+}
 
 // Relativna vlažnost u inkubatoru (mj. veličina 20):
 // ako su sva tri mjerenja "-" želimo red sa "-" i usaglašenost DA,
