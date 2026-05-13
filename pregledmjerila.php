@@ -19,12 +19,23 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     include_once ('includes/sidebar.php');
 
     /* Klijent (uloga 5) vidi samo mjerila koja su njegova (vlasnik = taj klijent) */
-    $whereMjerila = null;
-    $paramsMjerila = [];
-    if ((int)$_SESSION['user-type'] === 5 && !empty($_SESSION['user']) && preg_match('/^klijent_(\d+)$/', $_SESSION['user'], $m)) {
-        $whereMjerila = 'mjerila.mjerila_klijentid = ?';
-        $paramsMjerila = [(int)$m[1]];
+    $stanjeFilter = isset($_GET['stanje']) ? (string)$_GET['stanje'] : 'svi';
+    if (!in_array($stanjeFilter, array('svi', 'ispravni', 'neispravni'), true)) {
+        $stanjeFilter = 'svi';
     }
+
+    $wherePartsMjerila = array();
+    $paramsMjerila = array();
+    if ((int)$_SESSION['user-type'] === 5 && !empty($_SESSION['user']) && preg_match('/^klijent_(\d+)$/', $_SESSION['user'], $m)) {
+        $wherePartsMjerila[] = 'mjerila.mjerila_klijentid = ?';
+        $paramsMjerila[] = (int)$m[1];
+    }
+    if ($stanjeFilter === 'ispravni') {
+        $wherePartsMjerila[] = 'COALESCE(mjerila.mjerila_neispravno, 0) = 0';
+    } elseif ($stanjeFilter === 'neispravni') {
+        $wherePartsMjerila[] = 'mjerila.mjerila_neispravno = 1';
+    }
+    $whereMjerila = !empty($wherePartsMjerila) ? implode(' AND ', $wherePartsMjerila) : null;
 
     $perPageOptions = array(10, 25, 50, 100);
     $perPage = isset($_GET['per_page']) && in_array((int)$_GET['per_page'], $perPageOptions) ? (int)$_GET['per_page'] : 10;
@@ -57,6 +68,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     $total_pages = (int) $objects[1];
     $total_results = isset($objects[2]) ? (int) $objects[2] : 0;
 
+    $paginationQueryExtra = '&stanje=' . rawurlencode($stanjeFilter);
     ?>
 
     <main id="main" class="main">
@@ -103,16 +115,24 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         $to = min($currentPage * $perPage, $total_results);
                     } ?>
                     <?php if ($total_results > 0) { ?><small class="text-muted">Prikaz <?php echo $from; ?>–<?php echo $to; ?> od <?php echo $total_results; ?> mjerila.</small><?php } else { ?><small class="text-muted">Trenutno nema mjerila.</small><?php } ?>
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center flex-wrap">
                         <label for="per_page_select" class="mr-2 mb-0"><small>Prikaži po stranici:</small></label>
-                        <select id="per_page_select" class="form-control form-control-sm" style="width:auto;" onchange="window.location.href='pregledmjerila.php?page=1&per_page='+this.value;">
+                        <select id="per_page_select" class="form-control form-control-sm" style="width:auto;" onchange="window.location.href='pregledmjerila.php?page=1&per_page='+this.value+'&stanje=<?php echo rawurlencode($stanjeFilter); ?>';">
                             <?php foreach ($perPageOptions as $opt) { ?>
                                 <option value="<?php echo $opt; ?>" <?php echo $perPage == $opt ? 'selected' : ''; ?>><?php echo $opt; ?></option>
                             <?php } ?>
                         </select>
                     </div>
                 </div>
-                <div class="col-lg-12 mb-3">
+                <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center flex-wrap">
+                    <div class="d-flex align-items-center flex-wrap mb-2 mb-md-0">
+                        <label for="stanje_filter_mjerila" class="mr-2 mb-0"><small>Stanje mjerila:</small></label>
+                        <select id="stanje_filter_mjerila" class="form-control form-control-sm" style="width:auto;min-width:11rem;" onchange="window.location.href='pregledmjerila.php?page=1&per_page=<?php echo (int)$perPage; ?>&stanje='+encodeURIComponent(this.value);">
+                            <option value="svi" <?php echo $stanjeFilter === 'svi' ? 'selected' : ''; ?>>Prikaži sve</option>
+                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Prikaži ispravne</option>
+                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Prikaži neispravne</option>
+                        </select>
+                    </div>
                     <?php include('includes/pagination.php'); ?>
                 </div>
                 <?php $showOznaciMjerila = ima_permisiju('pregledmjerila', 'uredivanje') || ima_permisiju('pregledmjerila', 'brisanje') || ima_permisiju('pregledradnihnaloga', 'dodavanje'); ?>
