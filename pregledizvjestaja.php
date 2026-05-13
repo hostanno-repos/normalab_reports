@@ -30,10 +30,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
     $search_rn = trim((string)($_GET['search_rn'] ?? ''));
     $search_serija = trim((string)($_GET['search_serija'] ?? ''));
-    $stanjeFilter = isset($_GET['stanje']) ? (string)$_GET['stanje'] : 'svi';
-    if (!in_array($stanjeFilter, array('svi', 'ispravni', 'neispravni'), true)) {
-        $stanjeFilter = 'svi';
-    }
 
     $columns = '
         izvjestaji.*,
@@ -69,11 +65,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     if ($search_serija !== '') {
         $whereParts[] = 'mjerila.mjerila_serijskibroj LIKE ?';
         $paramsIzvjestaji[] = '%' . $search_serija . '%';
-    }
-    if ($stanjeFilter === 'ispravni') {
-        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 0';
-    } elseif ($stanjeFilter === 'neispravni') {
-        $whereParts[] = 'izvjestaji.izvjestaji_mjeriloneispravno = 1';
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 
@@ -121,7 +112,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         $paginationQueryExtra = '';
         if ($search_rn !== '') { $paginationQueryExtra .= '&search_rn=' . rawurlencode($search_rn); }
         if ($search_serija !== '') { $paginationQueryExtra .= '&search_serija=' . rawurlencode($search_serija); }
-        $paginationQueryExtra .= '&stanje=' . rawurlencode($stanjeFilter);
         ob_start();
         include(__DIR__ . '/includes/pagination.php');
         $paginationHtml = ob_get_clean();
@@ -194,7 +184,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
             $paginationQueryExtra = '';
             if ($search_rn !== '') { $paginationQueryExtra .= '&search_rn=' . rawurlencode($search_rn); }
             if ($search_serija !== '') { $paginationQueryExtra .= '&search_serija=' . rawurlencode($search_serija); }
-            $paginationQueryExtra .= '&stanje=' . rawurlencode($stanjeFilter);
             ?>
             <div class="row">
                 <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center flex-wrap">
@@ -218,18 +207,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         </select>
                     </div>
                 </div>
-                <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center flex-wrap">
-                    <div class="d-flex align-items-end flex-wrap mb-2 mb-lg-0">
-                        <label for="stanje_filter_izvjestaji" class="mb-0 mr-2">Stanje mjerila:</label>
-                        <select id="stanje_filter_izvjestaji" class="form-control form-control-sm" style="width:auto;min-width:11rem;">
-                            <option value="svi" <?php echo $stanjeFilter === 'svi' ? 'selected' : ''; ?>>Prikaži sve</option>
-                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Prikaži ispravne</option>
-                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Prikaži neispravne</option>
-                        </select>
-                    </div>
-                    <div id="izvjestaji-pagination-top">
-                        <?php include('includes/pagination.php'); ?>
-                    </div>
+                <div class="col-lg-12 mb-3" id="izvjestaji-pagination-top">
+                    <?php include('includes/pagination.php'); ?>
                 </div>
                 <div class="col-lg-12">
                     <table class="table w-100">
@@ -277,7 +256,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         var debounceTimer = null;
         var debounceMs = 400;
         var currentPage = <?php echo (int)$currentPage; ?>;
-        var stanjeFilterEl = document.getElementById('stanje_filter_izvjestaji');
 
         function buildQueryString(page, perPage) {
             page = page || 1;
@@ -285,8 +263,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
             var params = ['page=' + page, 'per_page=' + perPage, 'ajax=1'];
             if (searchRn && searchRn.value.trim()) params.push('search_rn=' + encodeURIComponent(searchRn.value.trim()));
             if (searchSerija && searchSerija.value.trim()) params.push('search_serija=' + encodeURIComponent(searchSerija.value.trim()));
-            var st = stanjeFilterEl && stanjeFilterEl.value ? stanjeFilterEl.value : 'svi';
-            params.push('stanje=' + encodeURIComponent(st));
             return 'pregledizvjestaja.php?' + params.join('&');
         }
 
@@ -320,7 +296,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
 
         if (searchRn) searchRn.addEventListener('input', onSearchInput);
         if (searchSerija) searchSerija.addEventListener('input', onSearchInput);
-        if (stanjeFilterEl) stanjeFilterEl.addEventListener('change', function() { applySearch(); });
         if (perPageSelect) {
             perPageSelect.addEventListener('change', function() {
                 var activeEl = document.activeElement;
