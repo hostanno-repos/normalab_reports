@@ -234,6 +234,15 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         <input type="text" name="izvjestaji_mjerilosluzbenaoznaka" value="<?php echo $mjerilo['mjerila_sluzbenaoznaka'] ?>" disabled>
                     </div>
 
+                    <!-- MJERILO NEISPRAVNO -->
+                    <div class="col-lg-3 d-flex flex-column mb-2">
+                        <label for="izvjestaji_mjeriloneispravno">Mjerilo neispravno:</label>
+                        <select name="izvjestaji_mjeriloneispravno" id="izvjestaji_mjeriloneispravno" required>
+                            <option value="0" <?php echo (!isset($mjerilo['mjerila_neispravno']) || (int)$mjerilo['mjerila_neispravno'] === 0) ? 'selected' : ''; ?>>NE</option>
+                            <option value="1" <?php echo (isset($mjerilo['mjerila_neispravno']) && (int)$mjerilo['mjerila_neispravno'] === 1) ? 'selected' : ''; ?>>DA</option>
+                        </select>
+                    </div>
+
                     <!-- DIVIDER -->
                     <hr class="w-100">
 
