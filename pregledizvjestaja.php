@@ -30,10 +30,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
     $search_rn = trim((string)($_GET['search_rn'] ?? ''));
     $search_serija = trim((string)($_GET['search_serija'] ?? ''));
-    $stanjeFilter = isset($_GET['stanje']) ? (string)$_GET['stanje'] : 'svi';
-    if (!in_array($stanjeFilter, array('svi', 'ispravni', 'neispravni'), true)) {
-        $stanjeFilter = 'svi';
-    }
 
     $columns = '
         izvjestaji.*,
@@ -69,11 +65,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     if ($search_serija !== '') {
         $whereParts[] = 'mjerila.mjerila_serijskibroj LIKE ?';
         $paramsIzvjestaji[] = '%' . $search_serija . '%';
-    }
-    if ($stanjeFilter === 'ispravni') {
-        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 0';
-    } elseif ($stanjeFilter === 'neispravni') {
-        $whereParts[] = 'izvjestaji.izvjestaji_mjeriloneispravno = 1';
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 
@@ -121,7 +112,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         $paginationQueryExtra = '';
         if ($search_rn !== '') { $paginationQueryExtra .= '&search_rn=' . rawurlencode($search_rn); }
         if ($search_serija !== '') { $paginationQueryExtra .= '&search_serija=' . rawurlencode($search_serija); }
-        $paginationQueryExtra .= '&stanje=' . rawurlencode($stanjeFilter);
         ob_start();
         include(__DIR__ . '/includes/pagination.php');
         $paginationHtml = ob_get_clean();

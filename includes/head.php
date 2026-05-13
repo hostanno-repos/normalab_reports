@@ -26,11 +26,8 @@ if (!empty($_POST) && !$isPodesavanjaPage) {
 
 $path = (empty($_SERVER['HTTPS']) ? 'http' : 'https') . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 $file = explode("?", basename($path))[0];
-$refererForPage = isset($_SERVER['HTTP_REFERER']) ? (string)$_SERVER['HTTP_REFERER'] : '';
-if ($refererForPage !== '') {
-    $page_ = explode("/", $refererForPage);
-} else {
-    $page_ = array(basename($_SERVER['SCRIPT_NAME'] ?? 'index.php'));
+if (isset($_SERVER['HTTP_REFERER'])) {
+    $page_ = explode("/", $_SERVER['HTTP_REFERER']);
 }
 
 if (isset($_GET['message']) && $_GET['message'] == true) { ?>

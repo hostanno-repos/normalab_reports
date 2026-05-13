@@ -99,13 +99,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         <label for="mjerila_sluzbenaoznaka">Službena oznaka:</label>
                         <input type="text" name="mjerila_sluzbenaoznaka">
                     </div>
-                    <div class="col-lg-3 d-flex flex-column mb-2">
-                        <label for="mjerila_neispravno">Mjerilo neispravno:</label>
-                        <select name="mjerila_neispravno" id="">
-                            <option value="0" selected>NE</option>
-                            <option value="1">DA</option>
-                        </select>
-                    </div>
                     <!-- <div class="col-lg-3 d-flex flex-column mb-2">
                         <label id="hiddenLabel" for="mjerila_djeca" hidden>Mjerilo krvnog pritiska za djecu i
                             novorođenčad:</label>
