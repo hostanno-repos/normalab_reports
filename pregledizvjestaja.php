@@ -71,9 +71,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         $paramsIzvjestaji[] = '%' . $search_serija . '%';
     }
     if ($stanjeFilter === 'ispravni') {
-        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 0';
+        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 0 AND COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 0';
     } elseif ($stanjeFilter === 'neispravni') {
-        $whereParts[] = 'izvjestaji.izvjestaji_mjeriloneispravno = 1';
+        $whereParts[] = '(COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 1 OR COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 1)';
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 
@@ -223,8 +223,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         <label for="stanje_filter_izvjestaji" class="mb-0 mr-2">Stanje mjerila:</label>
                         <select id="stanje_filter_izvjestaji" class="form-control form-control-sm" style="width:auto;min-width:12rem;">
                             <option value="svi" <?php echo $stanjeFilter === 'svi' ? 'selected' : ''; ?>>Prikaži sve</option>
-                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Prikaži ispravna mjerila</option>
-                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Prikaži neispravna mjerila</option>
+                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Ispravna i usaglašena (mjerenja)</option>
+                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Neispravna ili neusaglašena (mjerenja)</option>
                         </select>
                     </div>
                     <div id="izvjestaji-pagination-top">

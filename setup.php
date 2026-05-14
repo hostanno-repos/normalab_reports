@@ -78,6 +78,11 @@ $migrations = array(
         'sql'  => "ALTER TABLE `izvjestaji` ADD COLUMN `izvjestaji_mjeriloneispravno` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `izvjestaji_mjerilokablovi`"
     ),
     array(
+        'id'   => 'izvjestaji_nisu_usaglaseni',
+        'name' => 'Kolona izvjestaji_nisu_usaglaseni (zaključak mjerenja: nisu usaglašeni – filter/pregled)',
+        'sql'  => "ALTER TABLE `izvjestaji` ADD COLUMN `izvjestaji_nisu_usaglaseni` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `izvjestaji_mjeriloneispravno`"
+    ),
+    array(
         'id'   => 'mjerila_neispravno',
         'name' => 'Kolona mjerila_neispravno (sinkronizacija s izvještajem)',
         'sql'  => "ALTER TABLE `mjerila` ADD COLUMN `mjerila_neispravno` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `mjerila_zadovoljava`"

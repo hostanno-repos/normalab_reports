@@ -307,7 +307,7 @@ if ($insertIzvjestaj == 1) {
     //$izvjestaji_ovjeriodatum = $_POST['izvjestaji_ovjeriodatum'];
 
     //WRITE QUERY
-    $query = $pdo->prepare('INSERT INTO izvjestaji (izvjestaji_radninalogid,izvjestaji_broj,izvjestaji_tipizvjestajaid,izvjestaji_datumizdavanja,izvjestaji_datuminspekcije,izvjestaji_datumzahtjeva,izvjestaji_zahtjevzaispitivanje,izvjestaji_mjeriloid,izvjestaji_mjestoinspekcije,izvjestaji_lokacijamjerila,izvjestaji_vrstainspekcijeid,izvjestaji_opremazainspekciju,izvjestaji_opisprocedure,izvjestaji_temperatura,izvjestaji_vlaznost,izvjestaji_skinutizig,izvjestaji_mjerilocisto,izvjestaji_mjerilocjelovito,izvjestaji_mjerilocitljivo,izvjestaji_mjerilokablovi,izvjestaji_mjeriloneispravno,izvjestaji_novizig,izvjestaji_napomena,izvjestaji_izvrsioid,izvjestaji_izvrsiodadatum,izvjestaji_ovjerioid,izvjestaji_ovjeriodatum)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $query = $pdo->prepare('INSERT INTO izvjestaji (izvjestaji_radninalogid,izvjestaji_broj,izvjestaji_tipizvjestajaid,izvjestaji_datumizdavanja,izvjestaji_datuminspekcije,izvjestaji_datumzahtjeva,izvjestaji_zahtjevzaispitivanje,izvjestaji_mjeriloid,izvjestaji_mjestoinspekcije,izvjestaji_lokacijamjerila,izvjestaji_vrstainspekcijeid,izvjestaji_opremazainspekciju,izvjestaji_opisprocedure,izvjestaji_temperatura,izvjestaji_vlaznost,izvjestaji_skinutizig,izvjestaji_mjerilocisto,izvjestaji_mjerilocjelovito,izvjestaji_mjerilocitljivo,izvjestaji_mjerilokablovi,izvjestaji_mjeriloneispravno,izvjestaji_nisu_usaglaseni,izvjestaji_novizig,izvjestaji_napomena,izvjestaji_izvrsioid,izvjestaji_izvrsiodadatum,izvjestaji_ovjerioid,izvjestaji_ovjeriodatum)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
 
     //BIND VALUES
     $query->bindValue(1, $izvjestaji_radninalogid);
@@ -332,12 +332,14 @@ if ($insertIzvjestaj == 1) {
     $query->bindValue(20, $izvjestaji_mjerilokablovi);
     $izvjestaji_mjeriloneispravno = (isset($_POST['izvjestaji_mjeriloneispravno']) && (string)$_POST['izvjestaji_mjeriloneispravno'] === '1') ? 1 : 0;
     $query->bindValue(21, $izvjestaji_mjeriloneispravno, PDO::PARAM_INT);
-    $query->bindValue(22, $izvjestaji_novizig);
-    $query->bindValue(23, $izvjestaji_napomena);
-    $query->bindValue(24, $izvjestaji_izvrsioid);
-    $query->bindValue(25, $izvjestaji_izvrsiodadatum);
-    $query->bindValue(26, $izvjestaji_ovjerioid);
-    $query->bindValue(27, $izvjestaji_ovjeriodatum);
+    $izvjestaji_nisu_usaglaseni = (isset($_POST['izvjestaji_nisu_usaglaseni']) && (string)$_POST['izvjestaji_nisu_usaglaseni'] === '1') ? 1 : 0;
+    $query->bindValue(22, $izvjestaji_nisu_usaglaseni, PDO::PARAM_INT);
+    $query->bindValue(23, $izvjestaji_novizig);
+    $query->bindValue(24, $izvjestaji_napomena);
+    $query->bindValue(25, $izvjestaji_izvrsioid);
+    $query->bindValue(26, $izvjestaji_izvrsiodadatum);
+    $query->bindValue(27, $izvjestaji_ovjerioid);
+    $query->bindValue(28, $izvjestaji_ovjeriodatum);
 
     //print_r($query);
 

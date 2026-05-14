@@ -816,6 +816,7 @@ $total_column = $select->columnCount();
                         <option value="0" <?php echo $neisprPrikaz === 0 ? 'selected' : ''; ?>>NE</option>
                         <option value="1" <?php echo $neisprPrikaz === 1 ? 'selected' : ''; ?>>DA</option>
                     </select>
+                    <input type="hidden" name="izvjestaji_nisu_usaglaseni" id="izvjestaji_nisu_usaglaseni" value="<?php echo isset($izvjestaj['izvjestaji_nisu_usaglaseni']) ? (int)$izvjestaj['izvjestaji_nisu_usaglaseni'] : 0; ?>">
                 </div>
 
                 <!-- DIVIDER -->
@@ -1570,6 +1571,19 @@ $total_column = $select->columnCount();
             });
             syncIzvjestajOpremaHidden();
 
+            // Kad zaključak u odjeljku 6 kaže "NISU USAGLAŠENI", automatski DA na "Mjerilo neispravno"
+            function syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinalTekst) {
+                var nisu = (usaGlFinalTekst && String(usaGlFinalTekst).indexOf("NISU USAGLAŠENI") !== -1) ? "1" : "0";
+                var $hid = $("#izvjestaji_nisu_usaglaseni");
+                if ($hid.length) {
+                    $hid.val(nisu);
+                }
+                var $sel = $("#izvjestaji_mjeriloneispravno");
+                if ($sel.length && nisu === "1") {
+                    $sel.val("1");
+                }
+            }
+
             //PRORAČUN PRILIKOM UNOSA MJERENJA
             <?php
             //AKO NISU MJERILA KRVNOG PRITISKA
@@ -1762,6 +1776,7 @@ $total_column = $select->columnCount();
 
                     //UPISUJEMO GLAVNU USAGLAŠENOST
                     $("span.usaGlFinal").html(usaGlFinal);
+                    syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinal);
 
                     console.log(usaGlFinal);
                 });
@@ -2179,14 +2194,13 @@ $total_column = $select->columnCount();
 
                 //UPISUJEMO FINALNU USAGLAŠENOST
                 $(".usaGlFinal").html(usaGlFinal);
+                syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinal);
 
             }
         <?php } ?>
 
-        //U STARTU POPUNIMO TABELE
-        proracunTabela();
-
-        // Samo promijenena polja u POST-u (manji payload)
+        // Samo promijenena polja u POST-u (manji payload). Snimak prije proračuna da auto-postavka
+        // "Mjerilo neispravno" iz zaključka (npr. postojeći izvještaj u bazi imao NE) uđe u diff pri Sačuvaj.
         (function () {
             var form = document.getElementById('uredi-form');
             if (!form || form.getAttribute('data-uredi-tabela') !== 'izvjestaji') {
@@ -2245,6 +2259,9 @@ $total_column = $select->columnCount();
                 ghost.submit();
             });
         })();
+
+        //U STARTU POPUNIMO TABELE (nakon snimka za djelomični POST)
+        proracunTabela();
             
         //NASVAKU IZMJENU OPALIMO FUNKCIJU OPET
         $(".mjerenje").change(function () {

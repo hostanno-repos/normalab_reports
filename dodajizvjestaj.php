@@ -241,6 +241,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                             <option value="0" <?php echo (!isset($mjerilo['mjerila_neispravno']) || (int)$mjerilo['mjerila_neispravno'] === 0) ? 'selected' : ''; ?>>NE</option>
                             <option value="1" <?php echo (isset($mjerilo['mjerila_neispravno']) && (int)$mjerilo['mjerila_neispravno'] === 1) ? 'selected' : ''; ?>>DA</option>
                         </select>
+                        <input type="hidden" name="izvjestaji_nisu_usaglaseni" id="izvjestaji_nisu_usaglaseni" value="0">
                     </div>
 
                     <!-- DIVIDER -->
@@ -1317,6 +1318,19 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
             });
             syncIzvjestajOpremaHidden();
 
+            // Kad zaključak u odjeljku 6 kaže da mjerilo nije usaglašeno ("NISU USAGLAŠENI"), automatski DA na "Mjerilo neispravno"
+            function syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinalTekst) {
+                var nisu = (usaGlFinalTekst && String(usaGlFinalTekst).indexOf("NISU USAGLAŠENI") !== -1) ? "1" : "0";
+                var $hid = $("#izvjestaji_nisu_usaglaseni");
+                if ($hid.length) {
+                    $hid.val(nisu);
+                }
+                var $sel = $("#izvjestaji_mjeriloneispravno");
+                if ($sel.length && nisu === "1") {
+                    $sel.val("1");
+                }
+            }
+
             //PRORAČUN PRILIKOM UNOSA MJERENJA
             <?php
             //AKO NISU MJERILA KRVNOG PRITISKA
@@ -1508,6 +1522,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
 
                     //UPISUJEMO GLAVNU USAGLAŠENOST
                     $("span.usaGlFinal").html(usaGlFinal);
+                    syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinal);
 
                     console.log(usaGlFinal);
                 });
@@ -1918,6 +1933,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
 
                 //UPISUJEMO FINALNU USAGLAŠENOST
                 $(".usaGlFinal").html(usaGlFinal);
+                syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinal);
 
             }
         <?php } ?>
