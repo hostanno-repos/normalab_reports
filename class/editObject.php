@@ -158,6 +158,7 @@ if (isset($_POST['edit_izvjestaji'])) {
                 ':referentnavrijednostid' => $pieces[2],
                 ':brojmjerenja' => $pieces[3]
             ]);
+            $selectRezultat = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($selectRezultat != false) {
                 $queryRezultat = $pdo->prepare('DELETE FROM rezultatimjerenja WHERE  rezultatimjerenja_izvjestajid = ' . $_POST['izvjestaji_id'] . '  AND rezultatimjerenja_mjernavelicinaid = ' . $pieces[1] . '  AND rezultatimjerenja_referentnavrijednostid = ' . $pieces[2] . '  AND rezultatimjerenja_brojmjerenja = ' . $pieces[3]);
                 $queryRezultat->execute();
@@ -169,6 +170,13 @@ if (isset($_POST['edit_izvjestaji'])) {
     //print_r($queryIzvjestaj);
     //die();
     $queryIzvjestaj->execute();
+
+    if (isset($_POST['izvjestaji_mjeriloid'])) {
+        $vNeispravno = (isset($_POST['izvjestaji_mjeriloneispravno']) && (string)$_POST['izvjestaji_mjeriloneispravno'] === '1') ? 1 : 0;
+        $updMjerila = $pdo->prepare('UPDATE mjerila SET mjerila_neispravno = ? WHERE mjerila_id = ? LIMIT 1');
+        $updMjerila->execute(array($vNeispravno, (int)$_POST['izvjestaji_mjeriloid']));
+    }
+
     header('Location: pregledizvjestaja.php?page=1');
 }
 

@@ -73,6 +73,16 @@ $migrations = array(
         'sql'  => "ALTER TABLE `izvjestaji` ADD COLUMN `izvjestaji_lokacijamjerila` VARCHAR(255) NULL DEFAULT NULL AFTER `izvjestaji_mjestoinspekcije`"
     ),
     array(
+        'id'   => 'izvjestaji_mjeriloneispravno',
+        'name' => 'Kolona izvjestaji_mjeriloneispravno (mjerilo neispravno na izvještaju)',
+        'sql'  => "ALTER TABLE `izvjestaji` ADD COLUMN `izvjestaji_mjeriloneispravno` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `izvjestaji_mjerilokablovi`"
+    ),
+    array(
+        'id'   => 'mjerila_neispravno',
+        'name' => 'Kolona mjerila_neispravno (sinkronizacija s izvještajem)',
+        'sql'  => "ALTER TABLE `mjerila` ADD COLUMN `mjerila_neispravno` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `mjerila_zadovoljava`"
+    ),
+    array(
         'id'   => 'rjesenjazaovlascivanje_tablica',
         'name' => 'Tablica rjesenjazaovlascivanje (rješenja o ovlašćivanju – broj i datum za izvještaje)',
         'sql'  => "CREATE TABLE IF NOT EXISTS `rjesenjazaovlascivanje` (

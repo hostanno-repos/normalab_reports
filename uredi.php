@@ -1,7 +1,12 @@
 <?php
 //INCLUDES
 include_once ('includes/head.php');
-$page_ = explode("/", $_SERVER['HTTP_REFERER']);
+$__ref = $_SERVER['HTTP_REFERER'] ?? '';
+if ($__ref !== '') {
+    $page_ = explode('/', $__ref);
+} elseif (!isset($page_) || !is_array($page_) || $page_ === array()) {
+    $page_ = array(basename(__FILE__));
+}
 
 if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
 
@@ -342,6 +347,11 @@ $total_column = $select->columnCount();
                             case "mjerila_sluzbenaoznaka":
                                 $labelName = "Službena oznaka";
                                 break;
+                            case "mjerila_neispravno":
+                                $labelName = "Mjerilo neispravno";
+                                $input = "select_da_ne_int";
+                                $disabled = 0;
+                                break;
                             case "mjernevelicine_vrstauredjajaid":
                                 $labelName = "Vrsta uređaja";
                                 $input = "select";
@@ -541,6 +551,13 @@ $total_column = $select->columnCount();
                                              ?></option>
                                         <?php } ?>
                                             </select>
+                                <?php } else if ($input == "select_da_ne_int") {
+                                    $vDaNe = isset($singleObject[$meta['name']]) ? (int)$singleObject[$meta['name']] : 0;
+                                    ?>
+                                    <select name="<?php echo htmlspecialchars($meta['name']); ?>" id="">
+                                        <option value="0" <?php echo $vDaNe === 0 ? 'selected' : ''; ?>>NE</option>
+                                        <option value="1" <?php echo $vDaNe === 1 ? 'selected' : ''; ?>>DA</option>
+                                    </select>
                                 <?php } ?>
 
                                 <?php if ($labelName != "Id" && $labelName != "Timestamp" && !($meta['name'] == 'korisnici_lozinka_prikaz' && !in_array($_SESSION['user-type'], [1, 7]))) { ?>
@@ -589,6 +606,9 @@ $total_column = $select->columnCount();
                     //KUPIMO MJERILA
                     $mjerila = new allObjectsBy;    
                     $mjerila = $mjerila->fetch_all_objects_by("mjerila", "mjerila_vrstauredjajaid", $radninalog['radninalozi_vrstauredjajaid'], "mjerila_serijskibroj", "ASC");
+
+                    $mymjerilo = new singleObject;
+                    $mymjerilo = $mymjerilo->fetch_single_object("mjerila", "mjerila_id", $izvjestaj['izvjestaji_mjeriloid']);
 
                     //KUPIMO VRSTU INSPEKCIJE
                     $vrsteinspekcije = new allObjects;
@@ -747,12 +767,6 @@ $total_column = $select->columnCount();
                         <?php } ?>
                     </select>
                 </div>
-                
-                <!-- MJERILO PODACI -->
-                <?php 
-                    $mymjerilo = new singleObject; 
-                    $mymjerilo = $mymjerilo -> fetch_single_object("mjerila", "mjerila_id",$izvjestaj['izvjestaji_mjeriloid']); 
-                ?>
 
                 <!-- ZADOVOLJAVA -->
                 <div class="col-lg-3 d-flex flex-column mb-2">
@@ -788,6 +802,20 @@ $total_column = $select->columnCount();
                 <div class="col-lg-3 d-flex flex-column mb-2">
                     <label for="izvjestaji_">Službena oznaka:</label>
                     <input type="text" name="izvjestaji_mjerilosluzbenaoznaka" value="<?php echo $mymjerilo['mjerila_sluzbenaoznaka'] ?>" disabled>
+                </div>
+
+                <!-- MJERILO NEISPRAVNO -->
+                <div class="col-lg-3 d-flex flex-column mb-2">
+                    <label for="izvjestaji_mjeriloneispravno">Mjerilo neispravno:</label>
+                    <select name="izvjestaji_mjeriloneispravno" id="izvjestaji_mjeriloneispravno" required>
+                        <?php
+                        $neisprPrikaz = isset($izvjestaj['izvjestaji_mjeriloneispravno'])
+                            ? (int)$izvjestaj['izvjestaji_mjeriloneispravno']
+                            : (isset($mymjerilo['mjerila_neispravno']) ? (int)$mymjerilo['mjerila_neispravno'] : 0);
+                        ?>
+                        <option value="0" <?php echo $neisprPrikaz === 0 ? 'selected' : ''; ?>>NE</option>
+                        <option value="1" <?php echo $neisprPrikaz === 1 ? 'selected' : ''; ?>>DA</option>
+                    </select>
                 </div>
 
                 <!-- DIVIDER -->
