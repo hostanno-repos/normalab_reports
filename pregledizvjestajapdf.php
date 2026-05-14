@@ -1579,6 +1579,18 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
     $pdf->Ln(5);
 }
 //$finalusaglasenost = 0;
+
+// Za filter na pregledu izvještaja: upis kolone iz istog zaključka kao u PDF-u (stari zapisi ostaju 0 dok se PDF ne generiše ili forma ne sačuva).
+if (isset($izvjestaj['izvjestaji_id'], $finalusaglasenost)) {
+    $nisuUsaglaseniVal = (strpos((string)$finalusaglasenost, 'NISU') !== false) ? 1 : 0;
+    try {
+        $stNisu = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
+        $stNisu->execute(array($nisuUsaglaseniVal, (int)$izvjestaj['izvjestaji_id']));
+    } catch (Throwable $e) {
+        // Npr. kolona još ne postoji na staroj bazi – PDF i dalje radi
+    }
+}
+
 //set regular font
 $pdf->AddFont('Calibri-Regular', '', 'calibri-regular.ttf', false);
 $pdf->SetFont('Calibri-Regular', '', 9);
