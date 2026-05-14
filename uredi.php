@@ -169,7 +169,7 @@ $total_column = $select->columnCount();
     <section class="section dashboard">
         <div class="row">
             <div class="col-lg-12">
-                <form class="col-lg-12 d-flex flex-wrap" action="<?php echo end($page_) ?>" method="post">
+                <form id="uredi-form" class="col-lg-12 d-flex flex-wrap" action="<?php echo end($page_) ?>" method="post" data-uredi-tabela="<?php echo htmlspecialchars($table, ENT_QUOTES, 'UTF-8'); ?>">
                 <?php
 
                 if($_GET['t'] != "izvjestaji"){
@@ -1556,20 +1556,19 @@ $total_column = $select->columnCount();
                 }
             });
 
-            //CHEKIRANJE OPREME ZA INSPEKCIJU
-            var opremaZaInspekcijuArray = [];
-            $(".checkOprema").click(function () {
-                var idOpreme = $(this).attr("idOpreme");
-                if (jQuery.inArray(idOpreme, opremaZaInspekcijuArray) !== -1) {
-                    opremaZaInspekcijuArray = jQuery.grep(opremaZaInspekcijuArray, function (value) {
-                        return value != idOpreme;
-                    });
-                    $('input[name="izvjestaji_opremazainspekciju"]').val(opremaZaInspekcijuArray);
-                } else {
-                    opremaZaInspekcijuArray.push($(this).attr("idOpreme"));
-                    $('input[name="izvjestaji_opremazainspekciju"]').val(opremaZaInspekcijuArray);
-                };
+            // OPREMA ZA INSPEKCIJU: skriveno polje iz stvarno označenih kvačica (stari niz nije bio
+            // inicijaliziran s već označenim stavkama pri editu, pa isključivanje nije ispravno ažuriralo spremanje)
+            function syncIzvjestajOpremaHidden() {
+                var ids = [];
+                $(".checkOprema:checked").each(function () {
+                    ids.push($(this).attr("idOpreme"));
+                });
+                $('input[name="izvjestaji_opremazainspekciju"]').val(ids.join(","));
+            }
+            $(".checkOprema").on("change", function () {
+                syncIzvjestajOpremaHidden();
             });
+            syncIzvjestajOpremaHidden();
 
             //PRORAČUN PRILIKOM UNOSA MJERENJA
             <?php
@@ -2186,6 +2185,66 @@ $total_column = $select->columnCount();
 
         //U STARTU POPUNIMO TABELE
         proracunTabela();
+
+        // Samo promijenena polja u POST-u (manji payload)
+        (function () {
+            var form = document.getElementById('uredi-form');
+            if (!form || form.getAttribute('data-uredi-tabela') !== 'izvjestaji') {
+                return;
+            }
+            function captureFieldMap(f) {
+                var m = {};
+                var els = f.querySelectorAll('input, select, textarea');
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    var name = el.name;
+                    if (!name || name === 'edit_izvjestaji') {
+                        continue;
+                    }
+                    if (el.type === 'submit' || el.type === 'button' || el.type === 'file') {
+                        continue;
+                    }
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                        m[name] = el.checked ? el.value : '';
+                        continue;
+                    }
+                    m[name] = el.value;
+                }
+                return m;
+            }
+            var initial = captureFieldMap(form);
+            form.addEventListener('submit', function (ev) {
+                ev.preventDefault();
+                var cur = captureFieldMap(form);
+                var ghost = document.createElement('form');
+                ghost.method = 'POST';
+                ghost.action = form.action;
+                ghost.setAttribute('accept-charset', form.getAttribute('accept-charset') || 'UTF-8');
+                function addHidden(n, v) {
+                    var inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = n;
+                    inp.value = v != null ? String(v) : '';
+                    ghost.appendChild(inp);
+                }
+                var submitBtn = form.querySelector('[name="edit_izvjestaji"]');
+                addHidden('edit_izvjestaji', submitBtn ? submitBtn.value : '');
+                addHidden('izvjestaji_id', cur['izvjestaji_id'] != null ? cur['izvjestaji_id'] : '');
+                var keys = Object.keys(cur);
+                for (var j = 0; j < keys.length; j++) {
+                    var k = keys[j];
+                    if (k === 'izvjestaji_id' || k === 'edit_izvjestaji') {
+                        continue;
+                    }
+                    var prev = initial[k] === undefined ? '' : initial[k];
+                    if (String(prev) !== String(cur[k])) {
+                        addHidden(k, cur[k]);
+                    }
+                }
+                document.body.appendChild(ghost);
+                ghost.submit();
+            });
+        })();
             
         //NASVAKU IZMJENU OPALIMO FUNKCIJU OPET
         $(".mjerenje").change(function () {

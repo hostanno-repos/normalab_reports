@@ -1304,20 +1304,18 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                 }
             });
 
-            //CHEKIRANJE OPREME ZA INSPEKCIJU
-            var opremaZaInspekcijuArray = [];
-            $(".checkOprema").click(function () {
-                var idOpreme = $(this).attr("idOpreme");
-                if (jQuery.inArray(idOpreme, opremaZaInspekcijuArray) !== -1) {
-                    opremaZaInspekcijuArray = jQuery.grep(opremaZaInspekcijuArray, function (value) {
-                        return value != idOpreme;
-                    });
-                    $('input[name="izvjestaji_opremazainspekciju"]').val(opremaZaInspekcijuArray);
-                } else {
-                    opremaZaInspekcijuArray.push($(this).attr("idOpreme"));
-                    $('input[name="izvjestaji_opremazainspekciju"]').val(opremaZaInspekcijuArray);
-                };
+            // OPREMA ZA INSPEKCIJU: skriveno polje iz stvarno označenih kvačica
+            function syncIzvjestajOpremaHidden() {
+                var ids = [];
+                $(".checkOprema:checked").each(function () {
+                    ids.push($(this).attr("idOpreme"));
+                });
+                $('input[name="izvjestaji_opremazainspekciju"]').val(ids.join(","));
+            }
+            $(".checkOprema").on("change", function () {
+                syncIzvjestajOpremaHidden();
             });
+            syncIzvjestajOpremaHidden();
 
             //PRORAČUN PRILIKOM UNOSA MJERENJA
             <?php
