@@ -42,11 +42,14 @@ if (!isset($trecemjerenje)) {
 $sveBrojcano = (
     $prvomjerenje !== '-' && $prvomjerenje !== '--' &&
     $drugomjerenje !== '-' && $drugomjerenje !== '--' &&
-    $trecemjerenje !== '-' && $trecemjerenje !== '--'
+    $trecemjerenje !== '-' && $trecemjerenje !== '--' &&
+    is_numeric((string) $prvomjerenje) &&
+    is_numeric((string) $drugomjerenje) &&
+    is_numeric((string) $trecemjerenje)
 );
 
 if ($sveBrojcano) {
-    $srednjavrijednost = round(($prvomjerenje + $drugomjerenje + $trecemjerenje) / 3, 2);
+    $srednjavrijednost = round(((float) $prvomjerenje + (float) $drugomjerenje + (float) $trecemjerenje) / 3, 2);
     $apsolutnagreska = abs($srednjavrijednost - (float)$referentnavrijednost['referentnevrijednosti_referentnavrijednost']);
     $refVr = (float)$referentnavrijednost['referentnevrijednosti_referentnavrijednost'];
     if ($refVr == 0) {

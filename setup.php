@@ -3,6 +3,7 @@
  * Setup / migracije baze podataka
  * Na live domenu jednom posjeti rutu /setup.php da se izvrše sve izmjene u bazi.
  * Sve buduće izmjene sheme/ podataka čuvaj u nizu $migrations ispod.
+ * Stavka može imati 'sql' (jedan exec) ili 'php' (putanja do skripte koja vrati niz ['ok'=>bool,'message'=>string]).
  */
 
 include_once __DIR__ . '/connection.php';
@@ -13,6 +14,60 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 }
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+if (!function_exists('norma_setup_stream_log')) {
+    /**
+     * Ispis jedne linije u live log (flush u preglednik).
+     */
+    function norma_setup_stream_log($cssClass, $message)
+    {
+        echo '<div class="' . htmlspecialchars((string) $cssClass, ENT_QUOTES, 'UTF-8') . '">';
+        echo htmlspecialchars('[' . date('H:i:s') . '] ' . (string) $message, ENT_QUOTES, 'UTF-8');
+        echo "</div>\n";
+        if (ob_get_level() > 0) {
+            @ob_flush();
+        }
+        @flush();
+    }
+}
+
+@ini_set('implicit_flush', '1');
+@ini_set('output_buffering', '0');
+@ini_set('zlib.output_compression', '0');
+while (ob_get_level() > 0) {
+    @ob_end_flush();
+}
+
+header('Content-Type: text/html; charset=utf-8');
+?>
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Setup baze – NormaLab</title>
+    <style>
+        body { font-family: sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { font-size: 1.25rem; }
+        #setup-live-log { font-family: Consolas, "Courier New", monospace; font-size: 12px; border: 1px solid #ccc; padding: 10px; margin: 1rem 0; max-height: 380px; overflow-y: auto; background: #fafafa; line-height: 1.45; }
+        #setup-live-log .log { color: #333; }
+        #setup-live-log .log-ok { color: #070; }
+        #setup-live-log .log-err { color: #c00; }
+        #setup-live-log .log-skip { color: #666; }
+        #setup-live-log .log-step { color: #06c; font-weight: 600; margin-top: 6px; }
+        h2 { margin-top: 1.5rem; font-size: 1.1rem; }
+        ul { list-style: none; padding: 0; }
+        li { padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        .ok { color: #0a0; }
+        .err { color: #c00; }
+    </style>
+</head>
+<body>
+    <h1>Setup baze podataka</h1>
+    <p><strong>Status u hodu</strong> — stranica se puni korak po korak; ne zatvaraj je dok se ne pojavi sažetak na dnu. Ako se dugo ništa ne pojavlja, proxy ili hosting može držati buffer (probaj direktno na serveru ili <code>php includes/cli_backfill_batch.php</code>).</p>
+    <div id="setup-live-log">
+<?php
+norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
+
 $results = array();
 
 // Tablica za evidenciju odrađenih migracija (svaka migracija se izvrši samo jednom)
@@ -20,9 +75,17 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS `setup_migrations` (
     `migration_id` VARCHAR(128) NOT NULL PRIMARY KEY,
     `executed_at` DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+norma_setup_stream_log('log', 'Tablica setup_migrations provjerena / kreirana.');
 
 $stmtCheck = $pdo->prepare("SELECT 1 FROM `setup_migrations` WHERE `migration_id` = ? LIMIT 1");
 $stmtInsert = $pdo->prepare("INSERT INTO `setup_migrations` (`migration_id`) VALUES (?)");
+
+$GLOBALS['norma_setup_progress_callback'] = function ($current, $total, $reportId) {
+    norma_setup_stream_log(
+        'log',
+        'Gotov izvještaj ID ' . (int) $reportId . ' (' . (int) $current . '/' . (int) $total . ').'
+    );
+};
 
 $migrations = array(
     array(
@@ -97,24 +160,55 @@ $migrations = array(
             PRIMARY KEY (`rjesenjazaovlascivanje_id`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ),
+    array(
+        'id'   => 'backfill_izvjestaji_nisu_usaglaseni',
+        'name' => 'Backfill kolone izvjestaji_nisu_usaglaseni (filter pregleda – ista logika kao PDF)',
+        'php'  => __DIR__ . '/includes/migration_backfill_izvjestaji_nisu_usaglaseni.php',
+    ),
 );
 
 foreach ($migrations as $m) {
+    norma_setup_stream_log('log-step', 'Migracija: ' . $m['name']);
     $migrationId = isset($m['id']) ? $m['id'] : null;
     if ($migrationId !== null) {
         $stmtCheck->execute(array($migrationId));
         if ($stmtCheck->fetch()) {
             $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'preskočeno (već odrađeno)');
+            norma_setup_stream_log('log-skip', 'Preskočeno (već odrađeno): ' . $m['name']);
             continue;
         }
     }
     try {
-        $pdo->exec($m['sql']);
-        if ($migrationId !== null) {
-            $stmtInsert->execute(array($migrationId));
+        if (!empty($m['php'])) {
+            $phpPath = $m['php'];
+            if (!is_string($phpPath) || !is_readable($phpPath)) {
+                throw new PDOException('PHP migracija: put nije čitljiv: ' . $phpPath);
+            }
+            @set_time_limit(0);
+            @ignore_user_abort(true);
+            $ret = include $phpPath;
+            if (!is_array($ret) || !array_key_exists('ok', $ret)) {
+                throw new PDOException('PHP migracija mora vratiti niz s ključem ok');
+            }
+            if ($ret['ok'] !== true) {
+                $msg = isset($ret['message']) ? $ret['message'] : 'Neuspjeh';
+                throw new PDOException($msg);
+            }
+            $okMsg = isset($ret['message']) ? $ret['message'] : 'OK';
+            if ($migrationId !== null) {
+                $stmtInsert->execute(array($migrationId));
+            }
+            $results[] = array('name' => $m['name'], 'ok' => true, 'message' => $okMsg);
+        } elseif (isset($m['sql'])) {
+            $pdo->exec($m['sql']);
+            if ($migrationId !== null) {
+                $stmtInsert->execute(array($migrationId));
+            }
+            $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'OK');
+        } else {
+            throw new PDOException('Migracija mora imati ključ sql ili php');
         }
-        $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'OK');
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         $isDuplicate = ($e->getCode() == '42S21' || strpos($e->getMessage(), 'Duplicate column') !== false || strpos($e->getMessage(), 'Duplicate key') !== false);
         if ($isDuplicate && $migrationId !== null) {
             $stmtInsert->execute(array($migrationId));
@@ -125,9 +219,21 @@ foreach ($migrations as $m) {
             $results[] = array('name' => $m['name'], 'ok' => false, 'message' => $e->getMessage());
         }
     }
+    $lastR = end($results);
+    if ($lastR !== false) {
+        $shortMsg = $lastR['message'];
+        if (function_exists('mb_strlen') && mb_strlen($shortMsg, 'UTF-8') > 140) {
+            $shortMsg = mb_substr($shortMsg, 0, 137, 'UTF-8') . '…';
+        } elseif (strlen($shortMsg) > 140) {
+            $shortMsg = substr($shortMsg, 0, 137) . '…';
+        }
+        norma_setup_stream_log($lastR['ok'] ? 'log-ok' : 'log-err', $lastR['name'] . ' — ' . $shortMsg);
+    }
 }
 
-// Permisije: svima (osim Administrator i Super administrator) uključi sve sekcije i akcije
+unset($GLOBALS['norma_setup_progress_callback']);
+
+norma_setup_stream_log('log-step', 'Faza: permisije za uloge korisnika…');
 try {
     include_once __DIR__ . '/includes/permisije_config.php';
     $stmtUloge = $pdo->query("SELECT `korisnickeuloge_id` FROM `korisnickeuloge` WHERE `korisnickeuloge_id` NOT IN (1, 7)");
@@ -141,10 +247,13 @@ try {
         }
     }
     $results[] = array('name' => 'Permisije: sve vrste korisnika – sve dopušteno (sačuvano)', 'ok' => true, 'message' => 'OK');
+    norma_setup_stream_log('log-ok', 'Permisije ažurirane.');
 } catch (Throwable $e) {
     $results[] = array('name' => 'Permisije: sve vrste – sve dopušteno', 'ok' => false, 'message' => $e->getMessage());
+    norma_setup_stream_log('log-err', 'Permisije: ' . $e->getMessage());
 }
 
+norma_setup_stream_log('log-step', 'Faza: korisnički nalozi (klijenti / Zavod)…');
 $createdUsers = array();
 $stmtKlijenti = $pdo->query("SELECT `klijenti_id`, `klijenti_naziv` FROM `klijenti` ORDER BY `klijenti_id` ASC");
 $klijenti = $stmtKlijenti->fetchAll(PDO::FETCH_ASSOC);
@@ -177,26 +286,14 @@ if (!$checkZavod->fetch()) {
     $zavodUserCreated = array('username' => 'zavod', 'password' => $plainZavod);
 }
 
-header('Content-Type: text/html; charset=utf-8');
+norma_setup_stream_log('log', 'Korisnički nalozi provjereni / kreirani po potrebi.');
+norma_setup_stream_log('log-step', 'Završeno. Sažetak ispod.');
+
 ?>
-<!DOCTYPE html>
-<html lang="bs">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Setup baze – NormaLab</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
-        h1 { font-size: 1.25rem; }
-        ul { list-style: none; padding: 0; }
-        li { padding: 0.5rem 0; border-bottom: 1px solid #eee; }
-        .ok { color: #0a0; }
-        .err { color: #c00; }
-    </style>
-</head>
-<body>
-    <h1>Setup baze podataka</h1>
-    <p>Izmjene u bazi:</p>
+    </div>
+
+    <h2>Rezime migracija i faza</h2>
+    <p>Lista rezultata (isto što je i u hodu iznad, pregledno):</p>
     <ul>
         <?php foreach ($results as $r) { ?>
         <li class="<?php echo $r['ok'] ? 'ok' : 'err'; ?>">

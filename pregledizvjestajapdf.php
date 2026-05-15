@@ -3,23 +3,38 @@
 //HEAD
 include_once ('connection.php');
 include_once ('class/getObject.php');
-if (session_status() === PHP_SESSION_NONE) {
+if ((!isset($pdo) || !($pdo instanceof PDO)) && isset($GLOBALS['pdo']) && $GLOBALS['pdo'] instanceof PDO) {
+    $pdo = $GLOBALS['pdo'];
+}
+
+$normaLoopBackfill = !empty($GLOBALS['norma_backfill_loop_active']) || (getenv('NORMA_SETUP_BACKFILL_LOOP') === '1');
+if (!$normaLoopBackfill && session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+$normaSetupBackfillCli = (getenv('NORMA_SETUP_BACKFILL') === '1');
+if ($normaSetupBackfillCli && !$normaLoopBackfill) {
+    $_SESSION['logged_in'] = 'setup_backfill';
+    $_SESSION['user-type'] = 7;
 }
 include_once ('includes/permisije_check.php');
 
-if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] == '' || !ima_permisiju('pregledizvjestaja', 'pregled')) {
+if (!$normaSetupBackfillCli && (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] == '' || !ima_permisiju('pregledizvjestaja', 'pregled'))) {
     header('Location: index.php');
     exit;
 }
 
-require ('fpdf/tfpdf.php');
+if (!$normaLoopBackfill) {
+    require_once 'fpdf/tfpdf.php';
+}
 
 //kupimo izvjestaj
 $izvjestaj = new singleObject;
 $izvjestaj = $izvjestaj->fetch_single_object("izvjestaji", "izvjestaji_id", $_GET['izvjestaj'] ?? 0);
 
 if (!$izvjestaj) {
+    if ($normaSetupBackfillCli && $normaLoopBackfill) {
+        return;
+    }
     header('Location: pregledizvjestaja.php');
     exit;
 }
@@ -35,6 +50,7 @@ if ((int)($_SESSION['user-type'] ?? 0) === 5 && !empty($_SESSION['user']) && pre
 }
 
 //generišemo sve varijable iz izvjestaja
+unset($finalusaglasenost);
 foreach ($izvjestaj as $key => $value) {
     if (gettype($key) != "integer") {
         $$key = $value;
@@ -49,8 +65,13 @@ $naziv = str_replace('-', "", $naziv);
 $naziv = substr($naziv, 6, 2) . "-" . substr($naziv, 4, 2) . "-" . substr($naziv, 0, 4) . "-" . substr($naziv, 8, 2) . "-" . substr($naziv, 10, 2) . "-" . substr($naziv, 12, 2);
 //var_dump($naziv);
 
+if ($normaLoopBackfill) {
+    require_once __DIR__ . '/includes/NormaPdfBackfillStub.php';
+    $pdf = new NormaPdfBackfillStub();
+} else {
 $pdf = new tFPDF();
 
+if (!class_exists('PDF', false)) {
 class PDF extends tFPDF
 {
     // Page header
@@ -312,12 +333,14 @@ class PDF extends tFPDF
         return sqrt($variance);
     }
 }
+} // class_exists PDF
 
 //initialize new page
 $pdf = new PDF();
 // Veća donja margina (30 mm) da tabela nikad ne prelazi preko BATA loga u footeru
 $pdf->SetAutoPageBreak(true, 30);
 $pdf->AddPage();
+}
 
 //$lineNumber = 0;
 
@@ -529,14 +552,19 @@ $vrstainspekcije = $vrstainspekcije->fetch_single_object("vrsteinspekcije", "vrs
 
 //Vrsta inspekcije
 $pdf->Cell(40, 0, "Vrsta inspekcije: ", 0, 0, 'L');
-$pdf->Cell(140, 0, $vrstainspekcije['vrsteinspekcije_naziv'], 0, 0, 'L');
+$vrstaInsNaziv = ($vrstainspekcije !== false && isset($vrstainspekcije['vrsteinspekcije_naziv'])) ? $vrstainspekcije['vrsteinspekcije_naziv'] : '';
+$pdf->Cell(140, 0, $vrstaInsNaziv, 0, 0, 'L');
 $pdf->Ln(2.5);
 
 //Oprema za inspekciju
 $pdf->Cell(40, 5, "Oprema za inspekciju: ", 0, 0, 'L');
 
-//Razbijamo niz id-jeva opreme za inspekciju
-$opremaniz = explode(",", $izvjestaj['izvjestaji_opremazainspekciju']);
+//Razbijamo niz id-jeva opreme za inspekciju (null / prazno — bez deprecacije explode u PHP 8.1+)
+$opremaRaw = isset($izvjestaj['izvjestaji_opremazainspekciju']) ? $izvjestaj['izvjestaji_opremazainspekciju'] : '';
+$opremaRaw = is_string($opremaRaw) ? $opremaRaw : '';
+$opremaniz = array_filter(array_map('trim', explode(',', $opremaRaw)), function ($id) {
+    return $id !== '';
+});
 //formiramo nizove opreme, proizvođača opreme i serijskih brojeva opreme
 $opremafinal = "";
 $proizvodjacfinal = "";
@@ -544,6 +572,9 @@ $serijskifinal = "";
 foreach ($opremaniz as $singleoprema) {
     $opremazainspekciju = new singleObject;
     $opremazainspekciju = $opremazainspekciju->fetch_single_object("opremazainspekciju", "opremazainspekciju_id", $singleoprema);
+    if ($opremazainspekciju === false) {
+        continue;
+    }
     $opremafinal = $opremafinal . $opremazainspekciju['opremazainspekciju_naziv'] . "; ";
     $proizvodjacfinal = $proizvodjacfinal . $opremazainspekciju['opremazainspekciju_proizvodjac'] . "; ";
     $serijskifinal = $serijskifinal . $opremazainspekciju['opremazainspekciju_serijskibroj'] . "; ";
@@ -808,19 +839,16 @@ foreach ($mjernevelicine as $mjernavelicina) {
             $rezultatimjerenja = new allResults;
             $rezultatimjerenja = $rezultatimjerenja->fetch_all_results($izvjestaj['izvjestaji_id'], $mjernavelicina['mjernevelicine_id'], $referentnavrijednost['referentnevrijednosti_id']);
             foreach ($rezultatimjerenja as $rezultatmjerenja) {
-                switch ($rezultatmjerenja) {
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 1:
-                        $prvomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 2:
-                        $drugomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 3:
-                        $trecemjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 4:
-                        $cetvrtomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
+                $brojM = (int)($rezultatmjerenja['rezultatimjerenja_brojmjerenja'] ?? 0);
+                $valM = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'] ?? null;
+                if ($brojM === 1) {
+                    $prvomjerenje = $valM;
+                } elseif ($brojM === 2) {
+                    $drugomjerenje = $valM;
+                } elseif ($brojM === 3) {
+                    $trecemjerenje = $valM;
+                } elseif ($brojM === 4) {
+                    $cetvrtomjerenje = $valM;
                 }
             }
             if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-" && $cetvrtomjerenje != "-" && $prvomjerenje != "--" && $drugomjerenje != "--" && $trecemjerenje != "--" && $cetvrtomjerenje != "--") {
@@ -1175,6 +1203,9 @@ foreach ($mjernevelicine as $mjernavelicina) {
 
         //vrtimo sve referentne vrijednosti
         foreach ($referentnevrijednosti as $referentnavrijednost) {
+            $prvomjerenje = '-';
+            $drugomjerenje = '-';
+            $trecemjerenje = '-';
 
             if($referentnavrijednost['referentnevrijednosti_referentnavrijednost'] == 2 || $referentnavrijednost['referentnevrijednosti_referentnavrijednost'] == 100){
                 //ispisujemo zaglavlje
@@ -1207,17 +1238,14 @@ foreach ($mjernevelicine as $mjernavelicina) {
 
             //vrtimo rezultate mjerenja
             foreach ($rezultatimjerenja as $rezultatmjerenja) {
-                //razvrstavamo sve rezultate na prvo, drugo i treće mjerenje
-                switch ($rezultatmjerenja) {
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 1:
-                        $prvomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 2:
-                        $drugomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 3:
-                        $trecemjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
+                $brojM = (int)($rezultatmjerenja['rezultatimjerenja_brojmjerenja'] ?? 0);
+                $valM = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'] ?? null;
+                if ($brojM === 1) {
+                    $prvomjerenje = $valM;
+                } elseif ($brojM === 2) {
+                    $drugomjerenje = $valM;
+                } elseif ($brojM === 3) {
+                    $trecemjerenje = $valM;
                 }
             }
 
@@ -1226,7 +1254,7 @@ foreach ($mjernevelicine as $mjernavelicina) {
             if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-") {
 
                 //računamo srednju vrijednost iz naša tri mjerenja
-                $srednjavrijednost = round(($prvomjerenje + $drugomjerenje + $trecemjerenje) / 3, 2);
+                $srednjavrijednost = round(((float)$prvomjerenje + (float)$drugomjerenje + (float)$trecemjerenje) / 3, 2);
 
             //ako nije vršeno mjerenje odnosno ako je uneseno "-" kao rezultat mjerenja
             } else {
@@ -1347,13 +1375,12 @@ foreach ($mjernevelicine as $mjernavelicina) {
             $rezultatimjerenja = new allResults;
             $rezultatimjerenja = $rezultatimjerenja->fetch_all_results($izvjestaj['izvjestaji_id'], $mjernavelicina['mjernevelicine_id'], $referentnavrijednost['referentnevrijednosti_id']);
             foreach ($rezultatimjerenja as $rezultatmjerenja) {
-                switch ($rezultatmjerenja) {
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 1:
-                        $prvomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
-                    case $rezultatmjerenja['rezultatimjerenja_brojmjerenja'] == 2:
-                        $drugomjerenje = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'];
-                        break;
+                $brojM = (int)($rezultatmjerenja['rezultatimjerenja_brojmjerenja'] ?? 0);
+                $valM = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'] ?? null;
+                if ($brojM === 1) {
+                    $prvomjerenje = $valM;
+                } elseif ($brojM === 2) {
+                    $drugomjerenje = $valM;
                 }
             }
             if ($prvomjerenje != "-" && $drugomjerenje != "-" && $prvomjerenje != "--" && $drugomjerenje != "--") {
@@ -1390,6 +1417,24 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
 
     $rezultatmjerenja_ = new allResultsWithSort;
     $rezultatmjerenja_ = $rezultatmjerenja_->fetch_all_results_with_sort($izvjestaj['izvjestaji_id'], 0, 0, "rezultatimjerenja_brojmjerenja", "ASC");
+    $normaRezMjBroj = static function (array $rezultati, int $idx) {
+        if (!isset($rezultati[$idx]['rezultatimjerenja_rezultatmjerenja'])) {
+            return null;
+        }
+        $v = $rezultati[$idx]['rezultatimjerenja_rezultatmjerenja'];
+        if ($v === '-' || $v === '--' || $v === null || $v === '') {
+            return null;
+        }
+
+        return is_numeric((string) $v) ? (float) $v : null;
+    };
+    $normaRezMjFlag = static function (array $rezultati, int $idx) {
+        if (!isset($rezultati[$idx]['rezultatimjerenja_rezultatmjerenja'])) {
+            return null;
+        }
+
+        return (int) $rezultati[$idx]['rezultatimjerenja_rezultatmjerenja'];
+    };
 
     $finalusaglasenost = "USAGLAŠENI su";
 
@@ -1436,10 +1481,11 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         $pdf->Cell(30, 5, $zadovoljava, 'L,T,R,B', 0, 'C', 0);
         $pdf->Ln(5);
     } else if($vrstauredjaja['vrsteuredjaja_id'] != 49 && $vrstauredjaja['vrsteuredjaja_id'] != 50) {
+        $uticajZive = $normaRezMjBroj($rezultatmjerenja_, 1);
         $pdf->Cell(50, 5, "Uticaj žive na rad mjerila", 'L,T,R,B', 0, 'C', 1);
-        $pdf->Cell(40, 5, number_format((float) $rezultatmjerenja_[1]["rezultatimjerenja_rezultatmjerenja"], 2, '.', ''), 'L,T,R,B', 0, 'C', 0);
+        $pdf->Cell(40, 5, $uticajZive !== null ? number_format($uticajZive, 2, '.', '') : '-', 'L,T,R,B', 0, 'C', 0);
         $pdf->Cell(60, 5, "1.5", 'L,T,R,B', 0, 'C', 0);
-        if ((float) $rezultatmjerenja_[1]["rezultatimjerenja_rezultatmjerenja"] > 1.5) {
+        if ($uticajZive === null || $uticajZive > 1.5) {
             $zadovoljava = "NE";
             $finalusaglasenost = "NISU USAGLAŠENI";
         } else {
@@ -1473,28 +1519,22 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
 
     //var_dump($rezultatmjerenja_);
 
+    $brziIspust = $normaRezMjBroj($rezultatmjerenja_, 0);
     $pdf->Cell(50, 5, "Ispitivanja ventila brzog ispusta", 'L,T,R,B', 0, 'C', 1);
-    $pdf->Cell(40, 5, number_format((float) $rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"], 2, '.', ''), 'L,T,R,B', 0, 'C', 0);
+    $pdf->Cell(40, 5, $brziIspust !== null ? number_format($brziIspust, 2, '.', '') : '-', 'L,T,R,B', 0, 'C', 0);
     if ($vrstauredjaja['vrsteuredjaja_id'] == 13 || $vrstauredjaja['vrsteuredjaja_id'] == 14 || $vrstauredjaja['vrsteuredjaja_id'] == 50) {
         $pdf->Cell(60, 5, "5", 'L,T,R,B', 0, 'C', 0);
+        $brziIspustMax = 5;
     } else {
         $pdf->Cell(60, 5, "10", 'L,T,R,B', 0, 'C', 0);
+        $brziIspustMax = 10;
     }
 
-    if ($vrstauredjaja['vrsteuredjaja_id'] == 13 || $vrstauredjaja['vrsteuredjaja_id'] == 14 || $vrstauredjaja['vrsteuredjaja_id'] == 50) {
-        if ($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 5) {
-            $zadovoljava = "NE";
-            $finalusaglasenost = "NISU USAGLAŠENI";
-        } else {
-            $zadovoljava = "DA";
-        }
+    if ($brziIspust === null || $brziIspust > $brziIspustMax) {
+        $zadovoljava = "NE";
+        $finalusaglasenost = "NISU USAGLAŠENI";
     } else {
-        if ($rezultatmjerenja_[0]["rezultatimjerenja_rezultatmjerenja"] > 10) {
-            $zadovoljava = "NE";
-            $finalusaglasenost = "NISU USAGLAŠENI";
-        } else {
-            $zadovoljava = "DA";
-        }
+        $zadovoljava = "DA";
     }
 
     $pdf->Cell(30, 5, $zadovoljava, 'L,T,R,B', 0, 'C', 0);
@@ -1524,7 +1564,8 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         $pdf->Cell(35, 5, "", '', 0, 'C', 0);
         $pdf->Ln(5);
 
-        if ($rezultatmjerenja_[2]["rezultatimjerenja_rezultatmjerenja"] == 1) {
+        $flag2 = $normaRezMjFlag($rezultatmjerenja_, 2);
+        if ($flag2 === 1) {
             $rez2 = "DA";
         } else {
             $rez2 = "NE";
@@ -1536,7 +1577,8 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         $pdf->Cell(35, 5, "", '', 0, 'C', 0);
         $pdf->Ln(5);
 
-        if ($rezultatmjerenja_[3]["rezultatimjerenja_rezultatmjerenja"] == 1) {
+        $flag3 = $normaRezMjFlag($rezultatmjerenja_, 3);
+        if ($flag3 === 1) {
             $rez3 = "DA";
         } else {
             $rez3 = "NE";
@@ -1548,7 +1590,8 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
         $pdf->Cell(35, 5, "", '', 0, 'C', 0);
         $pdf->Ln(5);
 
-        if ($rezultatmjerenja_[4]["rezultatimjerenja_rezultatmjerenja"] == 1) {
+        $flag4 = $normaRezMjFlag($rezultatmjerenja_, 4);
+        if ($flag4 === 1) {
             $rez4 = "DA";
         } else {
             $rez4 = "NE";
@@ -1582,13 +1625,30 @@ if ($vrstauredjaja['vrsteuredjaja_id'] != 11 && $vrstauredjaja['vrsteuredjaja_id
 
 // Za filter na pregledu izvještaja: upis kolone iz istog zaključka kao u PDF-u (stari zapisi ostaju 0 dok se PDF ne generiše ili forma ne sačuva).
 if (isset($izvjestaj['izvjestaji_id'], $finalusaglasenost)) {
-    $nisuUsaglaseniVal = (strpos((string)$finalusaglasenost, 'NISU') !== false) ? 1 : 0;
-    try {
-        $stNisu = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
-        $stNisu->execute(array($nisuUsaglaseniVal, (int)$izvjestaj['izvjestaji_id']));
-    } catch (Throwable $e) {
-        // Npr. kolona još ne postoji na staroj bazi – PDF i dalje radi
+    $nisuUsaglaseniVal = (strpos((string) $finalusaglasenost, 'NISU') !== false) ? 1 : 0;
+    if (!empty($GLOBALS['norma_backfill_defer_db'])) {
+        if (!isset($GLOBALS['norma_backfill_rows']) || !is_array($GLOBALS['norma_backfill_rows'])) {
+            $GLOBALS['norma_backfill_rows'] = array();
+        }
+        $GLOBALS['norma_backfill_rows'][] = array(
+            'izvjestaji_id'               => (int) $izvjestaj['izvjestaji_id'],
+            'izvjestaji_nisu_usaglaseni'  => $nisuUsaglaseniVal,
+        );
+    } else {
+        try {
+            $stNisu = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
+            $stNisu->execute(array($nisuUsaglaseniVal, (int) $izvjestaj['izvjestaji_id']));
+        } catch (Throwable $e) {
+            // Npr. kolona još ne postoji na staroj bazi – PDF i dalje radi
+        }
     }
+}
+
+if (getenv('NORMA_SETUP_BACKFILL') === '1') {
+    if ($normaLoopBackfill) {
+        return;
+    }
+    exit(0);
 }
 
 //set regular font
