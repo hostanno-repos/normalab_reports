@@ -70,10 +70,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         $whereParts[] = 'mjerila.mjerila_serijskibroj LIKE ?';
         $paramsIzvjestaji[] = '%' . $search_serija . '%';
     }
+    // Samo zaključak mjerenja (backfill/PDF) — ne izvjestaji_mjeriloneispravno (ručno polje na formi).
     if ($stanjeFilter === 'ispravni') {
-        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 0 AND COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 0';
+        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 0';
     } elseif ($stanjeFilter === 'neispravni') {
-        $whereParts[] = '(COALESCE(izvjestaji.izvjestaji_mjeriloneispravno, 0) = 1 OR COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 1)';
+        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 1';
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 

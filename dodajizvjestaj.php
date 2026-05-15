@@ -1326,8 +1326,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     $hid.val(nisu);
                 }
                 var $sel = $("#izvjestaji_mjeriloneispravno");
-                if ($sel.length) {
-                    $sel.val(nisu);
+                if ($sel.length && nisu === "1") {
+                    $sel.val("1");
                 }
             }
 

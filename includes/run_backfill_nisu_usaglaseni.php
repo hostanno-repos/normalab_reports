@@ -1,6 +1,6 @@
 <?php
 /**
- * Backfill kolona izvjestaji_nisu_usaglaseni i izvjestaji_mjeriloneispravno (ista logika kao pregledizvjestajapdf.php do zaključka).
+ * Backfill kolone izvjestaji_nisu_usaglaseni (ista logika kao pregledizvjestajapdf.php do zaključka).
  *
  * Faza 1: za svaki ID pokrene PDF logiku s odgođenim UPDATE-om — rezultati u $GLOBALS pa u JSON.
  * Faza 2: jedna transakcija, batch UPDATE (brže od pojedinačnog commit-a po redu).
@@ -148,13 +148,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             $pdo->beginTransaction();
             try {
-                // Iste vrijednosti za obje kolone koje filter „neispravni” koristi (OR).
-                $st = $pdo->prepare(
-                    'UPDATE `izvjestaji` SET `izvjestaji_nisu_usaglaseni` = ?, `izvjestaji_mjeriloneispravno` = ? WHERE `izvjestaji_id` = ? LIMIT 1'
-                );
+                $st = $pdo->prepare('UPDATE `izvjestaji` SET `izvjestaji_nisu_usaglaseni` = ? WHERE `izvjestaji_id` = ? LIMIT 1');
                 foreach ($rows as $r) {
-                    $v = (int) $r['izvjestaji_nisu_usaglaseni'];
-                    $st->execute(array($v, $v, (int) $r['izvjestaji_id']));
+                    $st->execute(array((int) $r['izvjestaji_nisu_usaglaseni'], (int) $r['izvjestaji_id']));
                 }
                 $pdo->commit();
             } catch (Throwable $e) {
@@ -171,7 +167,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             return array(
                 'ok'      => true,
-                'message' => 'Backfill filtera (nisu_usaglaseni + mjeriloneispravno): ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
+                'message' => 'Backfill izvjestaji_nisu_usaglaseni: ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
                 'done' => $done,
                 'total' => $total,
                 'processed' => $n,

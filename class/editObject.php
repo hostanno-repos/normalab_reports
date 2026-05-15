@@ -151,16 +151,6 @@ if (isset($_POST['edit_izvjestaji'])) {
         $queryIzvjestaj->execute();
     }
 
-    // Djelomični POST: ako je poslan zaključak usaglašenosti, uskladi i „mjerilo neispravno” (isti flag).
-    if (array_key_exists('izvjestaji_nisu_usaglaseni', $_POST) && $izvjestaji_id > 0) {
-        $vSync = ((string) $_POST['izvjestaji_nisu_usaglaseni'] === '1') ? 1 : 0;
-        $stSync = $pdo->prepare(
-            'UPDATE izvjestaji SET izvjestaji_mjeriloneispravno = ?, izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1'
-        );
-        $stSync->execute(array($vSync, $vSync, $izvjestaji_id));
-        $_POST['izvjestaji_mjeriloneispravno'] = (string) $vSync;
-    }
-
     if (array_key_exists('izvjestaji_mjeriloneispravno', $_POST)) {
         $mId = isset($_POST['izvjestaji_mjeriloid']) ? (int)$_POST['izvjestaji_mjeriloid'] : 0;
         if ($mId === 0 && $izvjestaji_id > 0) {
