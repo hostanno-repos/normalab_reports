@@ -47,9 +47,12 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             );
         }
 
-        $stmtIds = $pdo->prepare('SELECT `izvjestaji_id` FROM `izvjestaji` ORDER BY `izvjestaji_id` ASC LIMIT ? OFFSET ?');
-        $stmtIds->execute([(int)$limit, (int)$offset]);
-        $ids = $stmtIds->fetchAll(PDO::FETCH_COLUMN, 0);
+        // LIMIT/OFFSET moraju biti literalni int u SQL-u (PDO ih inače binda kao string → 1064 na MariaDB).
+        $limit = (int) $limit;
+        $offset = (int) $offset;
+        $ids = $pdo->query(
+            'SELECT `izvjestaji_id` FROM `izvjestaji` ORDER BY `izvjestaji_id` ASC LIMIT ' . $limit . ' OFFSET ' . $offset
+        )->fetchAll(PDO::FETCH_COLUMN, 0);
         $chunkCount = is_array($ids) ? count($ids) : 0;
 
         if ($chunkCount === 0) {
