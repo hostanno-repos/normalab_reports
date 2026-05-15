@@ -70,14 +70,14 @@ norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
 
 $results = array();
 
-// Chunk backfill (klikni "Nastavi" da ide 200 po 200)
+// Chunk backfill (klikni "Nastavi" da ide 50 po 50)
 $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni';
-$backfillChunkLimit = 200;
+$backfillChunkLimit = 50;
 $stopAfterBackfillChunk = false;
 $backfillContinueUrl = '';
 $backfillChunkDone = true;

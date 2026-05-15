@@ -7,7 +7,7 @@
  *
  * @param PDO $pdo
  * @param callable|null $onProgress function(int $current, int $total, int $reportId): void
- * @param int|null $limit Koliko izvještaja po chunk-u (default: 200)
+ * @param int|null $limit Koliko izvještaja po chunk-u (default: 50)
  * @param int|null $offset Početni offset u sortiranom skupu izvještaja (default: 0)
  * @return array{ok:bool,message:string,done?:bool,total?:int,processed?:int,next_offset?:int}
  */
@@ -18,9 +18,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             return array('ok' => false, 'message' => 'Nema valjane PDO konekcije.');
         }
 
-        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 200);
+        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 50);
         $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
-        $limit = $limit > 0 ? $limit : 200;
+        $limit = $limit > 0 ? $limit : 50;
         $offset = $offset >= 0 ? $offset : 0;
 
         $chk = $pdo->query("SHOW COLUMNS FROM `izvjestaji` LIKE 'izvjestaji_nisu_usaglaseni'")->fetch(PDO::FETCH_ASSOC);
