@@ -1579,8 +1579,8 @@ $total_column = $select->columnCount();
                     $hid.val(nisu);
                 }
                 var $sel = $("#izvjestaji_mjeriloneispravno");
-                if ($sel.length && nisu === "1") {
-                    $sel.val("1");
+                if ($sel.length) {
+                    $sel.val(nisu);
                 }
             }
 

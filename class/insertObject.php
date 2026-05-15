@@ -330,9 +330,10 @@ if ($insertIzvjestaj == 1) {
     $query->bindValue(18, $izvjestaji_mjerilocjelovito);
     $query->bindValue(19, $izvjestaji_mjerilocitljivo);
     $query->bindValue(20, $izvjestaji_mjerilokablovi);
-    $izvjestaji_mjeriloneispravno = (isset($_POST['izvjestaji_mjeriloneispravno']) && (string)$_POST['izvjestaji_mjeriloneispravno'] === '1') ? 1 : 0;
-    $query->bindValue(21, $izvjestaji_mjeriloneispravno, PDO::PARAM_INT);
     $izvjestaji_nisu_usaglaseni = (isset($_POST['izvjestaji_nisu_usaglaseni']) && (string)$_POST['izvjestaji_nisu_usaglaseni'] === '1') ? 1 : 0;
+    $izvjestaji_mjeriloneispravno = (isset($_POST['izvjestaji_mjeriloneispravno']) && (string)$_POST['izvjestaji_mjeriloneispravno'] === '1') ? 1 : 0;
+    $izvjestaji_mjeriloneispravno = $izvjestaji_nisu_usaglaseni;
+    $query->bindValue(21, $izvjestaji_mjeriloneispravno, PDO::PARAM_INT);
     $query->bindValue(22, $izvjestaji_nisu_usaglaseni, PDO::PARAM_INT);
     $query->bindValue(23, $izvjestaji_novizig);
     $query->bindValue(24, $izvjestaji_napomena);

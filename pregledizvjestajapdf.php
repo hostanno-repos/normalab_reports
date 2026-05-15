@@ -1636,8 +1636,10 @@ if (isset($izvjestaj['izvjestaji_id'], $finalusaglasenost)) {
         );
     } else {
         try {
-            $stNisu = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
-            $stNisu->execute(array($nisuUsaglaseniVal, (int) $izvjestaj['izvjestaji_id']));
+            $stNisu = $pdo->prepare(
+                'UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ?, izvjestaji_mjeriloneispravno = ? WHERE izvjestaji_id = ? LIMIT 1'
+            );
+            $stNisu->execute(array($nisuUsaglaseniVal, $nisuUsaglaseniVal, (int) $izvjestaj['izvjestaji_id']));
         } catch (Throwable $e) {
             // Npr. kolona još ne postoji na staroj bazi – PDF i dalje radi
         }
