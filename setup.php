@@ -70,6 +70,40 @@ norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
 
 $results = array();
 
+// Chunk backfill (klikni "Nastavi" da ide 50 po 50)
+$setupMode = (string)($_GET['setup_mode'] ?? '');
+$onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
+
+$backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni';
+$backfillChunkLimit = 50;
+$stopAfterBackfillChunk = false;
+$backfillContinueUrl = '';
+$backfillChunkDone = true;
+
+// Defaults za sažetak (da ne bi bilo undefined pri ranom exit-u)
+$createdUsers = array();
+$zavodUserCreated = false;
+
+// Napredak backfill-a (offset) da možeš nastaviti narednim klikom
+$pdo->exec("CREATE TABLE IF NOT EXISTS `setup_backfill_progress` (
+    `migration_id` VARCHAR(128) NOT NULL PRIMARY KEY,
+    `offset` INT UNSIGNED NOT NULL DEFAULT 0,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+$stmtBackfillProgGet = $pdo->prepare("SELECT `offset` FROM `setup_backfill_progress` WHERE `migration_id` = ? LIMIT 1");
+$stmtBackfillProgUpsert = $pdo->prepare("INSERT INTO `setup_backfill_progress` (`migration_id`, `offset`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `offset` = VALUES(`offset`)");
+$stmtBackfillProgDelete = $pdo->prepare("DELETE FROM `setup_backfill_progress` WHERE `migration_id` = ?");
+
+$backfillOffset = 0;
+$stmtBackfillProgGet->execute(array($backfillMigrationId));
+$rowProg = $stmtBackfillProgGet->fetch(PDO::FETCH_ASSOC);
+if ($rowProg && isset($rowProg['offset'])) {
+    $backfillOffset = (int) $rowProg['offset'];
+}
+$GLOBALS['norma_setup_backfill_chunk_limit'] = $backfillChunkLimit;
+$GLOBALS['norma_setup_backfill_chunk_offset'] = $backfillOffset;
+
 // Tablica za evidenciju odrađenih migracija (svaka migracija se izvrši samo jednom)
 $pdo->exec("CREATE TABLE IF NOT EXISTS `setup_migrations` (
     `migration_id` VARCHAR(128) NOT NULL PRIMARY KEY,
@@ -167,6 +201,13 @@ $migrations = array(
     ),
 );
 
+// U modu "klikni Nastavi" izvršavamo samo backfill migraciju.
+if ($onlyBackfillChunk) {
+    $migrations = array_values(array_filter($migrations, function ($m) use ($backfillMigrationId) {
+        return isset($m['id']) && $m['id'] === $backfillMigrationId;
+    }));
+}
+
 foreach ($migrations as $m) {
     norma_setup_stream_log('log-step', 'Migracija: ' . $m['name']);
     $migrationId = isset($m['id']) ? $m['id'] : null;
@@ -195,8 +236,23 @@ foreach ($migrations as $m) {
                 throw new PDOException($msg);
             }
             $okMsg = isset($ret['message']) ? $ret['message'] : 'OK';
+            $done = ($ret['done'] ?? true) === true;
+            $nextOffset = isset($ret['next_offset']) ? (int) $ret['next_offset'] : null;
             if ($migrationId !== null) {
-                $stmtInsert->execute(array($migrationId));
+                if ($migrationId === $backfillMigrationId) {
+                    if ($done) {
+                        $stmtBackfillProgDelete->execute(array($migrationId));
+                        $stmtInsert->execute(array($migrationId));
+                    } else {
+                        $stmtBackfillProgUpsert->execute(array($migrationId, (int) ($nextOffset ?? 0)));
+                        $stopAfterBackfillChunk = true;
+                        $backfillChunkDone = false;
+                        $backfillContinueUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk';
+                        $okMsg .= ' (klikni Nastavi za sljedećih ' . (int)$backfillChunkLimit . ')';
+                    }
+                } else {
+                    $stmtInsert->execute(array($migrationId));
+                }
             }
             $results[] = array('name' => $m['name'], 'ok' => true, 'message' => $okMsg);
         } elseif (isset($m['sql'])) {
@@ -229,9 +285,25 @@ foreach ($migrations as $m) {
         }
         norma_setup_stream_log($lastR['ok'] ? 'log-ok' : 'log-err', $lastR['name'] . ' — ' . $shortMsg);
     }
+
+    if ($stopAfterBackfillChunk) {
+        break;
+    }
 }
 
 unset($GLOBALS['norma_setup_progress_callback']);
+
+// Ako je backfill u "klikni Nastavi" modu, ne idemo na ostale faze.
+if ($onlyBackfillChunk || $stopAfterBackfillChunk) {
+    if ($stopAfterBackfillChunk && !$backfillChunkDone && !empty($backfillContinueUrl)) {
+        echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Nastavi backfill (sljedećih ' . (int)$backfillChunkLimit . ')</a></p>';
+    } else {
+        echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><strong>Backfill završena.</strong></p>';
+    }
+    echo "</div>";
+    echo "</body></html>";
+    exit;
+}
 
 norma_setup_stream_log('log-step', 'Faza: permisije za uloge korisnika…');
 try {

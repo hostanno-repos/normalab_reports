@@ -7,14 +7,21 @@
  *
  * @param PDO $pdo
  * @param callable|null $onProgress function(int $current, int $total, int $reportId): void
- * @return array{ok:bool,message:string}
+ * @param int|null $limit Koliko izvještaja po chunk-u (default: 50)
+ * @param int|null $offset Početni offset u sortiranom skupu izvještaja (default: 0)
+ * @return array{ok:bool,message:string,done?:bool,total?:int,processed?:int,next_offset?:int}
  */
 if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
-    function norma_run_backfill_nisu_usaglaseni(PDO $pdo, $onProgress = null)
+    function norma_run_backfill_nisu_usaglaseni(PDO $pdo, $onProgress = null, ?int $limit = null, ?int $offset = null)
     {
         if (!($pdo instanceof PDO)) {
             return array('ok' => false, 'message' => 'Nema valjane PDO konekcije.');
         }
+
+        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 50);
+        $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
+        $limit = $limit > 0 ? $limit : 50;
+        $offset = $offset >= 0 ? $offset : 0;
 
         $chk = $pdo->query("SHOW COLUMNS FROM `izvjestaji` LIKE 'izvjestaji_nisu_usaglaseni'")->fetch(PDO::FETCH_ASSOC);
         if (!$chk) {
@@ -24,10 +31,36 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             );
         }
 
-        $ids = $pdo->query('SELECT `izvjestaji_id` FROM `izvjestaji` ORDER BY `izvjestaji_id` ASC')->fetchAll(PDO::FETCH_COLUMN, 0);
-        $total = count($ids);
+        $total = (int) $pdo->query('SELECT COUNT(*) FROM `izvjestaji`')->fetchColumn();
         if ($total === 0) {
             return array('ok' => true, 'message' => 'Nema izvještaja u bazi.');
+        }
+
+        if ($offset >= $total) {
+            return array(
+                'ok'         => true,
+                'message'    => 'Backfill: nema više posla (offset >= ukupno).',
+                'done'       => true,
+                'total'      => $total,
+                'processed'  => 0,
+                'next_offset'=> $total,
+            );
+        }
+
+        $stmtIds = $pdo->prepare('SELECT `izvjestaji_id` FROM `izvjestaji` ORDER BY `izvjestaji_id` ASC LIMIT ? OFFSET ?');
+        $stmtIds->execute([(int)$limit, (int)$offset]);
+        $ids = $stmtIds->fetchAll(PDO::FETCH_COLUMN, 0);
+        $chunkCount = is_array($ids) ? count($ids) : 0;
+
+        if ($chunkCount === 0) {
+            return array(
+                'ok'          => true,
+                'message'     => 'Backfill: chunk je prazan.',
+                'done'        => true,
+                'total'       => $total,
+                'processed'   => 0,
+                'next_offset' => $offset,
+            );
         }
 
         $root = dirname(__DIR__);
@@ -75,7 +108,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                 }
 
                 if (is_callable($onProgress)) {
-                    $onProgress($n, $total, $id);
+                    $onProgress($offset + $n, $total, $id);
                 }
 
                 if ($n % 50 === 0) {
@@ -90,6 +123,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             $payload = array(
                 'generated_at' => date('c'),
                 'total_izvjestaja_u_bazi' => $total,
+                'chunk_offset' => $offset,
+                'chunk_limit'  => $limit,
+                'chunk_processed_attempts' => $n,
                 'prikupljeno_redova'      => count($rows),
                 'greske_pri_racunanju'    => $fail,
                 'rows'                    => $rows,
@@ -123,9 +159,16 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                 );
             }
 
+            $nextOffset = $offset + $n;
+            $done = $nextOffset >= $total;
+
             return array(
                 'ok'      => true,
-                'message' => 'Backfill izvjestaji_nisu_usaglaseni: ažurirano ' . count($rows) . ' redova u jednoj transakciji. JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere). Filter na pregledu sada može ispravno raditi.',
+                'message' => 'Backfill izvjestaji_nisu_usaglaseni: ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
+                'done' => $done,
+                'total' => $total,
+                'processed' => $n,
+                'next_offset' => $nextOffset,
             );
         } finally {
             putenv('NORMA_SETUP_BACKFILL_LOOP');
