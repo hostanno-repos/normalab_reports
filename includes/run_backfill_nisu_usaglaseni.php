@@ -1,13 +1,13 @@
 <?php
 /**
- * Backfill kolone izvjestaji_nisu_usaglaseni (ista logika kao pregledizvjestajapdf.php do zaključka).
+ * Backfill kolona izvjestaji_nisu_usaglaseni i izvjestaji_mjeriloneispravno (ista logika kao pregledizvjestajapdf.php do zaključka).
  *
  * Faza 1: za svaki ID pokrene PDF logiku s odgođenim UPDATE-om — rezultati u $GLOBALS pa u JSON.
  * Faza 2: jedna transakcija, batch UPDATE (brže od pojedinačnog commit-a po redu).
  *
  * @param PDO $pdo
  * @param callable|null $onProgress function(int $current, int $total, int $reportId): void
- * @param int|null $limit Koliko izvještaja po chunk-u (default: 50)
+ * @param int|null $limit Koliko izvještaja po chunk-u (default: 200)
  * @param int|null $offset Početni offset u sortiranom skupu izvještaja (default: 0)
  * @return array{ok:bool,message:string,done?:bool,total?:int,processed?:int,next_offset?:int}
  */
@@ -18,9 +18,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             return array('ok' => false, 'message' => 'Nema valjane PDO konekcije.');
         }
 
-        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 50);
+        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 200);
         $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
-        $limit = $limit > 0 ? $limit : 50;
+        $limit = $limit > 0 ? $limit : 200;
         $offset = $offset >= 0 ? $offset : 0;
 
         $chk = $pdo->query("SHOW COLUMNS FROM `izvjestaji` LIKE 'izvjestaji_nisu_usaglaseni'")->fetch(PDO::FETCH_ASSOC);
@@ -148,9 +148,13 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             $pdo->beginTransaction();
             try {
-                $st = $pdo->prepare('UPDATE `izvjestaji` SET `izvjestaji_nisu_usaglaseni` = ? WHERE `izvjestaji_id` = ? LIMIT 1');
+                // Iste vrijednosti za obje kolone koje filter „neispravni” koristi (OR).
+                $st = $pdo->prepare(
+                    'UPDATE `izvjestaji` SET `izvjestaji_nisu_usaglaseni` = ?, `izvjestaji_mjeriloneispravno` = ? WHERE `izvjestaji_id` = ? LIMIT 1'
+                );
                 foreach ($rows as $r) {
-                    $st->execute(array((int) $r['izvjestaji_nisu_usaglaseni'], (int) $r['izvjestaji_id']));
+                    $v = (int) $r['izvjestaji_nisu_usaglaseni'];
+                    $st->execute(array($v, $v, (int) $r['izvjestaji_id']));
                 }
                 $pdo->commit();
             } catch (Throwable $e) {
@@ -167,7 +171,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             return array(
                 'ok'      => true,
-                'message' => 'Backfill izvjestaji_nisu_usaglaseni: ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
+                'message' => 'Backfill filtera (nisu_usaglaseni + mjeriloneispravno): ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
                 'done' => $done,
                 'total' => $total,
                 'processed' => $n,

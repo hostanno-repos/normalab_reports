@@ -70,12 +70,14 @@ norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
 
 $results = array();
 
-// Chunk backfill (klikni "Nastavi" da ide 50 po 50)
+// Chunk backfill (klikni "Nastavi" da ide 200 po 200)
 $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
+$backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
+$backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni';
-$backfillChunkLimit = 50;
+$backfillChunkLimit = 200;
 $stopAfterBackfillChunk = false;
 $backfillContinueUrl = '';
 $backfillChunkDone = true;
@@ -94,6 +96,12 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS `setup_backfill_progress` (
 $stmtBackfillProgGet = $pdo->prepare("SELECT `offset` FROM `setup_backfill_progress` WHERE `migration_id` = ? LIMIT 1");
 $stmtBackfillProgUpsert = $pdo->prepare("INSERT INTO `setup_backfill_progress` (`migration_id`, `offset`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `offset` = VALUES(`offset`)");
 $stmtBackfillProgDelete = $pdo->prepare("DELETE FROM `setup_backfill_progress` WHERE `migration_id` = ?");
+
+if ($backfillReset) {
+    $stmtBackfillProgDelete->execute(array($backfillMigrationId));
+    $stmtDelMig = $pdo->prepare('DELETE FROM `setup_migrations` WHERE `migration_id` = ?');
+    $stmtDelMig->execute(array($backfillMigrationId));
+}
 
 $backfillOffset = 0;
 $stmtBackfillProgGet->execute(array($backfillMigrationId));
@@ -212,11 +220,14 @@ foreach ($migrations as $m) {
     norma_setup_stream_log('log-step', 'Migracija: ' . $m['name']);
     $migrationId = isset($m['id']) ? $m['id'] : null;
     if ($migrationId !== null) {
-        $stmtCheck->execute(array($migrationId));
-        if ($stmtCheck->fetch()) {
-            $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'preskočeno (već odrađeno)');
-            norma_setup_stream_log('log-skip', 'Preskočeno (već odrađeno): ' . $m['name']);
-            continue;
+        $skipIfDone = !($onlyBackfillChunk && $backfillForce && $migrationId === $backfillMigrationId);
+        if ($skipIfDone) {
+            $stmtCheck->execute(array($migrationId));
+            if ($stmtCheck->fetch()) {
+                $results[] = array('name' => $m['name'], 'ok' => true, 'message' => 'preskočeno (već odrađeno)');
+                norma_setup_stream_log('log-skip', 'Preskočeno (već odrađeno): ' . $m['name']);
+                continue;
+            }
         }
     }
     try {
@@ -247,7 +258,8 @@ foreach ($migrations as $m) {
                         $stmtBackfillProgUpsert->execute(array($migrationId, (int) ($nextOffset ?? 0)));
                         $stopAfterBackfillChunk = true;
                         $backfillChunkDone = false;
-                        $backfillContinueUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk';
+                        $backfillContinueUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk'
+                            . ($backfillForce ? '&force=1' : '');
                         $okMsg .= ' (klikni Nastavi za sljedećih ' . (int)$backfillChunkLimit . ')';
                     }
                 } else {
@@ -295,10 +307,13 @@ unset($GLOBALS['norma_setup_progress_callback']);
 
 // Ako je backfill u "klikni Nastavi" modu, ne idemo na ostale faze.
 if ($onlyBackfillChunk || $stopAfterBackfillChunk) {
+    $backfillRestartUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&force=1&reset=1';
     if ($stopAfterBackfillChunk && !$backfillChunkDone && !empty($backfillContinueUrl)) {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Nastavi backfill (sljedećih ' . (int)$backfillChunkLimit . ')</a></p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „neispravni” nakon cijelog prolaza prati PDF logiku za sve izvještaje — ne treba ručno provjeravati pojedinačne ID-eve.</p>';
     } else {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><strong>Backfill završena.</strong></p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillRestartUrl, ENT_QUOTES, 'UTF-8') . '">Ponovi cijeli backfill od početka</a> (ako želiš ponovno prebrojati sve nakon novog deploya).</p>';
     }
     echo "</div>";
     echo "</body></html>";

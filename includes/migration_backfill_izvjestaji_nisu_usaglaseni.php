@@ -16,7 +16,7 @@ if (isset($GLOBALS['norma_setup_progress_callback']) && is_callable($GLOBALS['no
     $cb = $GLOBALS['norma_setup_progress_callback'];
 }
 
-$limit = (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 50);
+$limit = (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 200);
 $offset = (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
 
 return norma_run_backfill_nisu_usaglaseni($pdo, $cb, $limit, $offset);
