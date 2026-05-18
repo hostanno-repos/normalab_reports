@@ -1,10 +1,15 @@
 <?php
 /**
  * Zajednička logika za rezultate mjerenja (jedan red tabele – standardna tabela s 3 mjerenja).
- * Očekuje: $izvjestaj, $mjernavelicina, $referentnavrijednost (niz iz baze).
- * Opcionalno: $vrstauredjaja (za posebne formatiranje), $rezultati_mjerenja_odstupanje_decimals (0|1|3 za zaokruživanje odstupanja pri usporedbi, npr. za mpdf scriptove).
- * Postavlja: $prvomjerenje, $drugomjerenje, $trecemjerenje, $srednjavrijednost, $apsolutnagreska, $relativnagreska, $usaglasenost, $finalusaglasenost.
+ * Usklađeno s mpdf-includes skriptama (relative / absolute / shown-relative, posebni slučajevi 19, 20).
+ *
+ * Očekuje: $izvjestaj, $mjernavelicina, $referentnavrijednost.
+ * Opcionalno: $rezultati_mjerenja_odstupanje_decimals (inače iz norma_usaglasenost_pravila.php).
+ * Postavlja: $prvomjerenje, $drugomjerenje, $trecemjerenje, $srednjavrijednost, $apsolutnagreska,
+ *             $relativnagreska, $usaglasenost, $finalusaglasenost.
  */
+
+require_once __DIR__ . '/norma_usaglasenost_pravila.php';
 
 $prvomjerenje = null;
 $drugomjerenje = null;
@@ -18,7 +23,7 @@ $rezultatimjerenja = $rezultatimjerenja->fetch_all_results(
 );
 
 foreach ($rezultatimjerenja as $rezultatmjerenja) {
-    $broj = (int)($rezultatmjerenja['rezultatimjerenja_brojmjerenja'] ?? 0);
+    $broj = (int) ($rezultatmjerenja['rezultatimjerenja_brojmjerenja'] ?? 0);
     $vrijednost = $rezultatmjerenja['rezultatimjerenja_rezultatmjerenja'] ?? null;
     if ($broj === 1) {
         $prvomjerenje = $vrijednost;
@@ -39,23 +44,20 @@ if (!isset($trecemjerenje)) {
     $trecemjerenje = '-';
 }
 
-$sveBrojcano = (
-    $prvomjerenje !== '-' && $prvomjerenje !== '--' &&
-    $drugomjerenje !== '-' && $drugomjerenje !== '--' &&
-    $trecemjerenje !== '-' && $trecemjerenje !== '--' &&
-    is_numeric((string) $prvomjerenje) &&
-    is_numeric((string) $drugomjerenje) &&
-    is_numeric((string) $trecemjerenje)
-);
+$mjvId = (int) ($mjernavelicina['mjernevelicine_id'] ?? 0);
+$refId = (int) ($referentnavrijednost['referentnevrijednosti_id'] ?? 0);
+$refXs = (float) ($referentnavrijednost['referentnevrijednosti_referentnavrijednost'] ?? 0);
+$dozvOdstupanje = (float) ($referentnavrijednost['referentnevrijednosti_odstupanje'] ?? 0);
+
+$sveBrojcano = norma_usaglasenost_sva_tri_brojcano($prvomjerenje, $drugomjerenje, $trecemjerenje);
 
 if ($sveBrojcano) {
     $srednjavrijednost = round(((float) $prvomjerenje + (float) $drugomjerenje + (float) $trecemjerenje) / 3, 2);
-    $apsolutnagreska = abs($srednjavrijednost - (float)$referentnavrijednost['referentnevrijednosti_referentnavrijednost']);
-    $refVr = (float)$referentnavrijednost['referentnevrijednosti_referentnavrijednost'];
-    if ($refVr == 0) {
+    $apsolutnagreska = abs($srednjavrijednost - $refXs);
+    if ($refXs == 0.0) {
         $relativnagreska = abs(round(($apsolutnagreska / 1) * 100, 2));
     } else {
-        $relativnagreska = abs(round(($apsolutnagreska / $refVr) * 100, 2));
+        $relativnagreska = abs(round(($apsolutnagreska / $refXs) * 100, 2));
     }
 } else {
     $srednjavrijednost = '-';
@@ -63,32 +65,47 @@ if ($sveBrojcano) {
     $relativnagreska = '-';
 }
 
-$odstupanje_decimals = isset($rezultati_mjerenja_odstupanje_decimals) ? (int)$rezultati_mjerenja_odstupanje_decimals : 0;
+if (!isset($rezultati_mjerenja_odstupanje_decimals)) {
+    $rezultati_mjerenja_odstupanje_decimals = norma_mjerna_odstupanje_decimals($mjvId);
+}
+$odstupanje_decimals = (int) $rezultati_mjerenja_odstupanje_decimals;
 $odstupanje_decimals = in_array($odstupanje_decimals, [0, 1, 3], true) ? $odstupanje_decimals : 0;
+$dozvZaUsporedbu = round($dozvOdstupanje, $odstupanje_decimals);
 
-$refId = (int)($referentnavrijednost['referentnevrijednosti_id'] ?? 0);
-$specRefIds = [58, 59, 60, 61, 62, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76];
-$isSpecRef = in_array($refId, $specRefIds, true);
-$dozvOdstupanje = $referentnavrijednost['referentnevrijednosti_odstupanje'] ?? 0;
+$usporediApsolutno = norma_usaglasenost_usporedi_apsolutno($mjvId, $refXs, $refId);
+$isShownRelative = in_array($mjvId, norma_mjerna_shown_relative_ids(), true);
 
-if ($prvomjerenje === '--' || $drugomjerenje === '--' || $trecemjerenje === '--') {
+// --- Usaglašenost (ista logika kao u mpdf skriptama) ---
+if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     $usaglasenost = 'NE';
     $finalusaglasenost = 'NISU USAGLAŠENI';
+} elseif ($mjvId === 19 && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+    // Kiseonik u inkubatoru: sva tri "-" => DA (absolute skripta)
+    $usaglasenost = 'DA';
+} elseif ($mjvId === 20 && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+    // Relativna vlažnost: sva tri "-" => DA (relative skripta)
+    $usaglasenost = 'DA';
 } elseif (!$sveBrojcano) {
-    $usaglasenost = '-';
-    if (!isset($finalusaglasenost)) {
-        $finalusaglasenost = 'su USAGLAŠENI';
+    if ($isShownRelative) {
+        // script[one-shown-two-not-measurable-relative]: "-" (nije mjereno) => DA; samo "---" => NE (gore)
+        $usaglasenost = 'DA';
+    } else {
+        // hidden-relative / absolute: mješovito "-" i brojevi — red se ne ispisuje, ne ruši zaključak
+        $usaglasenost = '-';
+        if (!isset($finalusaglasenost)) {
+            $finalusaglasenost = 'su USAGLAŠENI';
+        }
     }
 } else {
-    if ($isSpecRef) {
-        if ($apsolutnagreska > $dozvOdstupanje) {
+    if ($usporediApsolutno) {
+        if ($apsolutnagreska > $dozvZaUsporedbu) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
         } else {
             $usaglasenost = 'DA';
         }
     } else {
-        if ($relativnagreska > round($dozvOdstupanje, $odstupanje_decimals)) {
+        if ($relativnagreska > $dozvZaUsporedbu) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
         } else {

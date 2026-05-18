@@ -5,6 +5,8 @@ if (isset($mjernaVelicinaID)) {
         $rezultati_mjerenja_odstupanje_decimals = 3;
     } elseif ($mjernaVelicinaID == 8 || $mjernaVelicinaID == 18 || $mjernaVelicinaID == 27 || $mjernaVelicinaID == 28) {
         $rezultati_mjerenja_odstupanje_decimals = 1;
+    } elseif ($mjernaVelicinaID == 15) {
+        $rezultati_mjerenja_odstupanje_decimals = 2;
     } else {
         $rezultati_mjerenja_odstupanje_decimals = 0;
     }

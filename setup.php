@@ -64,6 +64,46 @@ header('Content-Type: text/html; charset=utf-8');
 <body>
     <h1>Setup baze podataka</h1>
     <p><strong>Status u hodu</strong> — stranica se puni korak po korak; ne zatvaraj je dok se ne pojavi sažetak na dnu. Ako se dugo ništa ne pojavlja, proxy ili hosting može držati buffer (probaj direktno na serveru ili <code>php includes/cli_backfill_batch.php</code>).</p>
+    <?php
+    $setupBackfillStats = ['total' => 0, 'nisu_1' => 0, 'offset' => 0];
+    try {
+        $chkCol = $pdo->query("SHOW COLUMNS FROM `izvjestaji` LIKE 'izvjestaji_nisu_usaglaseni'")->fetch(PDO::FETCH_ASSOC);
+        if ($chkCol) {
+            $setupBackfillStats['total'] = (int) $pdo->query('SELECT COUNT(*) FROM `izvjestaji`')->fetchColumn();
+            $setupBackfillStats['nisu_1'] = (int) $pdo->query(
+                'SELECT COUNT(*) FROM `izvjestaji` WHERE `izvjestaji_nisu_usaglaseni` = 1'
+            )->fetchColumn();
+            $stProg = $pdo->prepare(
+                'SELECT `offset` FROM `setup_backfill_progress` WHERE `migration_id` = ? LIMIT 1'
+            );
+            $stProg->execute(['backfill_izvjestaji_nisu_usaglaseni_v2']);
+            $rp = $stProg->fetch(PDO::FETCH_ASSOC);
+            if ($rp && isset($rp['offset'])) {
+                $setupBackfillStats['offset'] = (int) $rp['offset'];
+            }
+        }
+    } catch (Throwable $e) {
+    }
+    ?>
+    <div style="margin:1rem 0;padding:1rem;border:1px solid #06c;border-radius:8px;background:#f0f7ff;">
+        <h2 style="margin:0 0 0.5rem;font-size:1.05rem;">Filter „Nisu usaglašeni” — backfill svih izvještaja</h2>
+        <p style="margin:0 0 0.75rem;font-size:0.92rem;">
+            Za svaki izvještaj pokreće se ista logika kao pri generisanju PDF-a
+            (apsolutno odstupanje u mmHg, ℃, J itd. gdje PDF tako kaže; relativno u % gdje PDF tako kaže).
+            Kolona <code>izvjestaji_nisu_usaglaseni</code> se ažurira u bazi.
+        </p>
+        <p style="margin:0 0 0.5rem;font-size:0.9rem;">
+            U bazi: <strong><?php echo (int) $setupBackfillStats['total']; ?></strong> izvještaja,
+            trenutno nisu usaglašeni: <strong><?php echo (int) $setupBackfillStats['nisu_1']; ?></strong>.
+            <?php if ($setupBackfillStats['offset'] > 0) { ?>
+                Offset backfilla: <strong><?php echo (int) $setupBackfillStats['offset']; ?></strong>.
+            <?php } ?>
+        </p>
+        <p style="margin:0;font-size:0.9rem;">
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (50 po 50)</a>
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
+        </p>
+    </div>
     <div id="setup-live-log">
 <?php
 norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
@@ -76,7 +116,8 @@ $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
 
-$backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni';
+$backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni_v2';
+$backfillMigrationIdLegacy = 'backfill_izvjestaji_nisu_usaglaseni';
 $backfillChunkLimit = 50;
 $stopAfterBackfillChunk = false;
 $backfillContinueUrl = '';
@@ -98,9 +139,11 @@ $stmtBackfillProgUpsert = $pdo->prepare("INSERT INTO `setup_backfill_progress` (
 $stmtBackfillProgDelete = $pdo->prepare("DELETE FROM `setup_backfill_progress` WHERE `migration_id` = ?");
 
 if ($backfillReset) {
-    $stmtBackfillProgDelete->execute(array($backfillMigrationId));
     $stmtDelMig = $pdo->prepare('DELETE FROM `setup_migrations` WHERE `migration_id` = ?');
-    $stmtDelMig->execute(array($backfillMigrationId));
+    foreach (array($backfillMigrationId, $backfillMigrationIdLegacy) as $midReset) {
+        $stmtBackfillProgDelete->execute(array($midReset));
+        $stmtDelMig->execute(array($midReset));
+    }
 }
 
 $backfillOffset = 0;
@@ -203,8 +246,8 @@ $migrations = array(
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ),
     array(
-        'id'   => 'backfill_izvjestaji_nisu_usaglaseni',
-        'name' => 'Backfill kolone izvjestaji_nisu_usaglaseni (filter pregleda – ista logika kao PDF)',
+        'id'   => 'backfill_izvjestaji_nisu_usaglaseni_v2',
+        'name' => 'Backfill izvjestaji_nisu_usaglaseni v2 (apsolutno/relativno po mjernoj veličini — kao PDF)',
         'php'  => __DIR__ . '/includes/migration_backfill_izvjestaji_nisu_usaglaseni.php',
     ),
 );
@@ -310,7 +353,7 @@ if ($onlyBackfillChunk || $stopAfterBackfillChunk) {
     $backfillRestartUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&force=1&reset=1';
     if ($stopAfterBackfillChunk && !$backfillChunkDone && !empty($backfillContinueUrl)) {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Nastavi backfill (sljedećih ' . (int)$backfillChunkLimit . ')</a></p>';
-        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „neispravni” nakon cijelog prolaza prati PDF logiku za sve izvještaje — ne treba ručno provjeravati pojedinačne ID-eve.</p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „Nisu usaglašeni” sada prati istu logiku kao PDF (apsolutno u jedinicama mjere gdje treba, relativno u % gdje treba). Nakon deploya obavezno pokreni backfill v2.</p>';
     } else {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><strong>Backfill završena.</strong></p>';
         echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillRestartUrl, ENT_QUOTES, 'UTF-8') . '">Ponovi cijeli backfill od početka</a> (ako želiš ponovno prebrojati sve nakon novog deploya).</p>';

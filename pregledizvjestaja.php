@@ -70,11 +70,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         $whereParts[] = 'mjerila.mjerila_serijskibroj LIKE ?';
         $paramsIzvjestaji[] = '%' . $search_serija . '%';
     }
-    // Samo zaključak mjerenja (backfill/PDF) — ne izvjestaji_mjeriloneispravno (ručno polje na formi).
+    // Samo kolona izvjestaji_nisu_usaglaseni (zaključak kao u PDF-u). Ručno „Mjerilo neispravno” se ne koristi u filteru.
     if ($stanjeFilter === 'ispravni') {
         $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 0';
     } elseif ($stanjeFilter === 'neispravni') {
-        $whereParts[] = 'COALESCE(izvjestaji.izvjestaji_nisu_usaglaseni, 0) = 1';
+        $whereParts[] = 'izvjestaji.izvjestaji_nisu_usaglaseni = 1';
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 
@@ -221,11 +221,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                 </div>
                 <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center flex-wrap">
                     <div class="d-flex align-items-end flex-wrap mb-2 mb-lg-0">
-                        <label for="stanje_filter_izvjestaji" class="mb-0 mr-2">Stanje mjerila:</label>
+                        <label for="stanje_filter_izvjestaji" class="mb-0 mr-2">Usaglašenost (izvještaj):</label>
                         <select id="stanje_filter_izvjestaji" class="form-control form-control-sm" style="width:auto;min-width:12rem;">
                             <option value="svi" <?php echo $stanjeFilter === 'svi' ? 'selected' : ''; ?>>Prikaži sve</option>
-                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Ispravna i usaglašena (mjerenja)</option>
-                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Neispravna ili neusaglašena (mjerenja)</option>
+                            <option value="ispravni" <?php echo $stanjeFilter === 'ispravni' ? 'selected' : ''; ?>>Usaglašeni</option>
+                            <option value="neispravni" <?php echo $stanjeFilter === 'neispravni' ? 'selected' : ''; ?>>Nisu usaglašeni</option>
                         </select>
                     </div>
                     <div id="izvjestaji-pagination-top">
