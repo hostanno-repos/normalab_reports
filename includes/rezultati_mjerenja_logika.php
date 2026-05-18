@@ -52,12 +52,13 @@ $dozvOdstupanje = (float) ($referentnavrijednost['referentnevrijednosti_odstupan
 $sveBrojcano = norma_usaglasenost_sva_tri_brojcano($prvomjerenje, $drugomjerenje, $trecemjerenje);
 
 if ($sveBrojcano) {
-    $srednjavrijednost = round(((float) $prvomjerenje + (float) $drugomjerenje + (float) $trecemjerenje) / 3, 2);
-    $apsolutnagreska = abs($srednjavrijednost - $refXs);
+    $srednjaSirova = ((float) $prvomjerenje + (float) $drugomjerenje + (float) $trecemjerenje) / 3;
+    $srednjavrijednost = round($srednjaSirova, 2);
+    $apsolutnagreska = abs($srednjaSirova - $refXs);
     if ($refXs == 0.0) {
-        $relativnagreska = abs(round(($apsolutnagreska / 1) * 100, 2));
+        $relativnagreska = abs(($apsolutnagreska / 1) * 100);
     } else {
-        $relativnagreska = abs(round(($apsolutnagreska / $refXs) * 100, 2));
+        $relativnagreska = abs(($apsolutnagreska / $refXs) * 100);
     }
 } else {
     $srednjavrijednost = '-';
