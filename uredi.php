@@ -181,6 +181,9 @@ $total_column = $select->columnCount();
                         $labelName = ucfirst(explode("_", $meta['name'])[1]);
                         $tableName = explode("_", $meta['name'])[0];
                         $readonly = 0;
+                        $input = 'input';
+                        $disabled = 0;
+                        unset($tableSelect, $columnToEqual, $columnToShow, $columnToShow_1, $columnToShow_2);
                         //var_dump($meta['native_type']);
                         switch ($meta['native_type']) {
                             case "LONG":
@@ -337,15 +340,39 @@ $total_column = $select->columnCount();
                                 break;
                             case "mjerila_proizvodjac":
                                 $labelName = "Proizvođač";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
+                                break;
+                            case "mjerila_tip":
+                                $labelName = "Tip";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
                                 break;
                             case "mjerila_serijskibroj":
                                 $labelName = "Serijski broj";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
                                 break;
                             case "mjerila_godinaproizvodnje":
                                 $labelName = "Godina proizvodnje";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
                                 break;
                             case "mjerila_sluzbenaoznaka":
                                 $labelName = "Službena oznaka";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
+                                break;
+                            case "mjerila_zadovoljava":
+                                $labelName = "Zadovoljava";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
                                 break;
                             case "mjerila_neispravno":
                                 $labelName = "Mjerilo neispravno";
