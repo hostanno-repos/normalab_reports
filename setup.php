@@ -100,7 +100,7 @@ header('Content-Type: text/html; charset=utf-8');
             <?php } ?>
         </p>
         <p style="margin:0;font-size:0.9rem;">
-            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (50 po 50)</a>
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (300 po 300)</a>
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
         </p>
     </div>
@@ -110,7 +110,7 @@ norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
 
 $results = array();
 
-// Chunk backfill (klikni "Nastavi" da ide 50 po 50)
+// Chunk backfill (klikni "Nastavi" da ide 300 po 300)
 $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
@@ -118,7 +118,7 @@ $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni_v2';
 $backfillMigrationIdLegacy = 'backfill_izvjestaji_nisu_usaglaseni';
-$backfillChunkLimit = 50;
+$backfillChunkLimit = 300;
 $stopAfterBackfillChunk = false;
 $backfillContinueUrl = '';
 $backfillChunkDone = true;

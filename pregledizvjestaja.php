@@ -78,11 +78,14 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     }
     $whereIzvjestaji = !empty($whereParts) ? implode(' AND ', $whereParts) : null;
 
+    require_once __DIR__ . '/includes/izvjestaj_sort_order.php';
+    $orderByIzvjestaji = norma_izvjestaji_order_by_sql();
+
     $objects = new allObjectsWithPagination;
     $objects = $objects->fetch_all_objects_with_pagination(
         'izvjestaji',
-        'izvjestaji_id',
-        'DESC',
+        $orderByIzvjestaji,
+        '',
         $perPage,
         $joins,
         $whereIzvjestaji,
