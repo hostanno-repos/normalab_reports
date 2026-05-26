@@ -74,7 +74,7 @@
 
     // Posebna logika za kiseonik u inkubatoru (mj. veličina 19):
     // sva tri mjerenja "-" => red sa "-" i usaglašenost DA
-    $isO2_19 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 19;
+    $isO2_19 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 155;
     
     if ($isO2_19 && $prvomjerenje == "-" && $drugomjerenje == "-" && $trecemjerenje == "-") {
         if(isset($pismo) && $pismo == "LAT"){$usaglasenost = "DA";}else{$usaglasenost = "ДА"; };
