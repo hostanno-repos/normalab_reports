@@ -1598,7 +1598,7 @@ $total_column = $select->columnCount();
             });
             syncIzvjestajOpremaHidden();
 
-            // Kad zaključak u odjeljku 6 kaže "NISU USAGLAŠENI", automatski DA na "Mjerilo neispravno"
+            // Zaključak usaglašenosti → izvjestaji_nisu_usaglaseni + Mjerilo neispravno (DA/NE)
             function syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinalTekst) {
                 var nisu = (usaGlFinalTekst && String(usaGlFinalTekst).indexOf("NISU USAGLAŠENI") !== -1) ? "1" : "0";
                 var $hid = $("#izvjestaji_nisu_usaglaseni");
@@ -1606,8 +1606,8 @@ $total_column = $select->columnCount();
                     $hid.val(nisu);
                 }
                 var $sel = $("#izvjestaji_mjeriloneispravno");
-                if ($sel.length && nisu === "1") {
-                    $sel.val("1");
+                if ($sel.length) {
+                    $sel.val(nisu);
                 }
             }
 
@@ -2256,6 +2256,9 @@ $total_column = $select->columnCount();
             var initial = captureFieldMap(form);
             form.addEventListener('submit', function (ev) {
                 ev.preventDefault();
+                if (typeof proracunTabela === 'function') {
+                    proracunTabela();
+                }
                 var cur = captureFieldMap(form);
                 var ghost = document.createElement('form');
                 ghost.method = 'POST';
@@ -2271,10 +2274,13 @@ $total_column = $select->columnCount();
                 var submitBtn = form.querySelector('[name="edit_izvjestaji"]');
                 addHidden('edit_izvjestaji', submitBtn ? submitBtn.value : '');
                 addHidden('izvjestaji_id', cur['izvjestaji_id'] != null ? cur['izvjestaji_id'] : '');
+                addHidden('izvjestaji_nisu_usaglaseni', cur['izvjestaji_nisu_usaglaseni'] != null ? cur['izvjestaji_nisu_usaglaseni'] : '0');
+                addHidden('izvjestaji_mjeriloneispravno', cur['izvjestaji_mjeriloneispravno'] != null ? cur['izvjestaji_mjeriloneispravno'] : '0');
                 var keys = Object.keys(cur);
                 for (var j = 0; j < keys.length; j++) {
                     var k = keys[j];
-                    if (k === 'izvjestaji_id' || k === 'edit_izvjestaji') {
+                    if (k === 'izvjestaji_id' || k === 'edit_izvjestaji'
+                        || k === 'izvjestaji_nisu_usaglaseni' || k === 'izvjestaji_mjeriloneispravno') {
                         continue;
                     }
                     var prev = initial[k] === undefined ? '' : initial[k];

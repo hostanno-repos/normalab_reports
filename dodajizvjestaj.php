@@ -1318,7 +1318,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
             });
             syncIzvjestajOpremaHidden();
 
-            // Kad zaključak u odjeljku 6 kaže da mjerilo nije usaglašeno ("NISU USAGLAŠENI"), automatski DA na "Mjerilo neispravno"
+            // Zaključak usaglašenosti → izvjestaji_nisu_usaglaseni + Mjerilo neispravno (DA/NE)
             function syncMjeriloNeispravnoFromZakljucakUsaglasenosti(usaGlFinalTekst) {
                 var nisu = (usaGlFinalTekst && String(usaGlFinalTekst).indexOf("NISU USAGLAŠENI") !== -1) ? "1" : "0";
                 var $hid = $("#izvjestaji_nisu_usaglaseni");
@@ -1326,8 +1326,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     $hid.val(nisu);
                 }
                 var $sel = $("#izvjestaji_mjeriloneispravno");
-                if ($sel.length && nisu === "1") {
-                    $sel.val("1");
+                if ($sel.length) {
+                    $sel.val(nisu);
                 }
             }
 

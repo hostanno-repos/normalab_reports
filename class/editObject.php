@@ -138,6 +138,11 @@ if (isset($_POST['edit_izvjestaji'])) {
         }
     }
 
+    if (array_key_exists('izvjestaji_nisu_usaglaseni', $_POST)) {
+        $nisu = ((string) $_POST['izvjestaji_nisu_usaglaseni'] === '1') ? 1 : 0;
+        $_POST['izvjestaji_mjeriloneispravno'] = (string) $nisu;
+    }
+
     $setParts = array();
     foreach ($_POST as $key => $value) {
         if (strpos($key, 'izvjestaji_') !== 0 || $key === 'izvjestaji_id') {
