@@ -75,20 +75,21 @@ $dozvZaUsporedbu = round($dozvOdstupanje, $odstupanje_decimals);
 
 $usporediApsolutno = norma_usaglasenost_usporedi_apsolutno($mjvId, $refXs, $refId);
 $isShownRelative = in_array($mjvId, norma_mjerna_shown_relative_ids(), true);
+$isShownAbsolute = in_array($mjvId, norma_mjerna_shown_absolute_ids(), true);
 
 // --- Usaglašenost (ista logika kao u mpdf skriptama) ---
 if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     $usaglasenost = 'NE';
     $finalusaglasenost = 'NISU USAGLAŠENI';
-} elseif ($mjvId === 19 && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+} elseif (($mjvId === 19 || $mjvId === 155) && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     // Kiseonik u inkubatoru: sva tri "-" => DA (absolute skripta)
     $usaglasenost = 'DA';
-} elseif ($mjvId === 20 && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+} elseif (($mjvId === 20 || $mjvId === 156) && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     // Relativna vlažnost: sva tri "-" => DA (relative skripta)
     $usaglasenost = 'DA';
 } elseif (!$sveBrojcano) {
-    if ($isShownRelative) {
-        // script[one-shown-two-not-measurable-relative]: "-" (nije mjereno) => DA; samo "---" => NE (gore)
+    if ($isShownRelative || $isShownAbsolute) {
+        // script[one-shown-two-not-measurable-relative]/absolute: "-" (nije mjereno) => DA; samo "---" => NE (gore)
         $usaglasenost = 'DA';
     } else {
         // hidden-relative / absolute: mješovito "-" i brojevi — red se ne ispisuje, ne ruši zaključak

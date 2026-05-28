@@ -59,6 +59,30 @@ if (!function_exists('norma_mjerna_shown_relative_ids')) {
     }
 }
 
+if (!function_exists('norma_mjerna_hidden_absolute_ids')) {
+    /**
+     * Apsolutna skripta "hidden": mješoviti/neizmjereni redovi se ne prikazuju.
+     * Usklađeno s pregledizvjestajapdf.php granom za standardnu tabelu.
+     */
+    function norma_mjerna_hidden_absolute_ids(): array
+    {
+        return [10, 11, 17, 18, 19, 20, 28, 151, 152, 155, 156];
+    }
+}
+
+if (!function_exists('norma_mjerna_shown_absolute_ids')) {
+    /**
+     * Apsolutna skripta "shown": red bez mjerenja je vidljiv i tretira se kao DA
+     * (osim eksplicitnog slučaja '---' koji ostaje NE).
+     */
+    function norma_mjerna_shown_absolute_ids(): array
+    {
+        $aps = norma_mjerna_apsolutno_odstupanje_ids();
+        $hidden = norma_mjerna_hidden_absolute_ids();
+        return array_values(array_diff($aps, $hidden));
+    }
+}
+
 if (!function_exists('norma_usaglasenost_usporedi_apsolutno')) {
     /**
      * Da li se za ovaj red uspoređuje apsolutna greška s dozvoljenim odstupanjem (ne relativni %).
