@@ -67,9 +67,8 @@ if ($sveBrojcano) {
     $relativnagreska = '-';
 }
 
-if (!isset($rezultati_mjerenja_odstupanje_decimals)) {
-    $rezultati_mjerenja_odstupanje_decimals = norma_mjerna_odstupanje_decimals($mjvId);
-}
+// Uvijek računamo tačnost po trenutnoj mjernoj veličini (ne smije se naslijediti iz prethodnog reda).
+$rezultati_mjerenja_odstupanje_decimals = norma_mjerna_odstupanje_decimals($mjvId);
 $odstupanje_decimals = (int) $rezultati_mjerenja_odstupanje_decimals;
 $odstupanje_decimals = in_array($odstupanje_decimals, [0, 1, 3], true) ? $odstupanje_decimals : 0;
 $dozvZaUsporedbu = round($dozvOdstupanje, $odstupanje_decimals);
