@@ -159,6 +159,8 @@ if ($onlySingleBackfill) {
             $savedLoop = $GLOBALS['norma_backfill_loop_active'] ?? null;
             $savedDefer = $GLOBALS['norma_backfill_defer_db'] ?? null;
             $savedRows = $GLOBALS['norma_backfill_rows'] ?? null;
+            $savedDebugCollect = $GLOBALS['norma_debug_usaglasenost_collect'] ?? null;
+            $savedDebugRows = $GLOBALS['norma_debug_usaglasenost_rows'] ?? null;
             $okSingle = false;
             $singleMsg = '';
             try {
@@ -168,6 +170,8 @@ if ($onlySingleBackfill) {
                 $GLOBALS['norma_backfill_loop_active'] = true;
                 $GLOBALS['norma_backfill_defer_db'] = true;
                 $GLOBALS['norma_backfill_rows'] = array();
+                $GLOBALS['norma_debug_usaglasenost_collect'] = true;
+                $GLOBALS['norma_debug_usaglasenost_rows'] = array();
                 $_GET['izvjestaj'] = $singleBackfillReportId;
                 include __DIR__ . '/pregledizvjestajapdf.php';
                 $newVal = null;
@@ -186,6 +190,19 @@ if ($onlySingleBackfill) {
                 $stUpdSingle->execute(array($newVal, $singleBackfillReportId));
                 $singleMsg = 'Staro=' . (int)$oldReport['izvjestaji_nisu_usaglaseni'] . ', novo=' . $newVal . '.';
                 $okSingle = true;
+                if (isset($GLOBALS['norma_debug_usaglasenost_rows']) && is_array($GLOBALS['norma_debug_usaglasenost_rows'])) {
+                    $dbgRows = $GLOBALS['norma_debug_usaglasenost_rows'];
+                    norma_setup_stream_log('log-step', 'DEBUG redovi usaglasenosti za izvjestaj #' . $singleBackfillReportId . ':');
+                    foreach ($dbgRows as $d) {
+                        $line = 'MV ' . (int)($d['mjernavelicina_id'] ?? 0)
+                            . ', REF ' . (int)($d['referentna_id'] ?? 0)
+                            . ', Xs=' . (string)($d['xs'] ?? '')
+                            . ', m=(' . (string)($d['m1'] ?? '') . ',' . (string)($d['m2'] ?? '') . ',' . (string)($d['m3'] ?? '') . ')'
+                            . ', usa=' . (string)($d['usaglasenost'] ?? '')
+                            . ' -> ' . (string)($d['reason'] ?? '');
+                        norma_setup_stream_log('log', $line);
+                    }
+                }
             } catch (Throwable $e) {
                 $singleMsg = $e->getMessage();
             }
@@ -207,6 +224,16 @@ if ($onlySingleBackfill) {
                 unset($GLOBALS['norma_backfill_rows']);
             } else {
                 $GLOBALS['norma_backfill_rows'] = $savedRows;
+            }
+            if ($savedDebugCollect === null) {
+                unset($GLOBALS['norma_debug_usaglasenost_collect']);
+            } else {
+                $GLOBALS['norma_debug_usaglasenost_collect'] = $savedDebugCollect;
+            }
+            if ($savedDebugRows === null) {
+                unset($GLOBALS['norma_debug_usaglasenost_rows']);
+            } else {
+                $GLOBALS['norma_debug_usaglasenost_rows'] = $savedDebugRows;
             }
             putenv('NORMA_SETUP_BACKFILL');
             putenv('NORMA_SETUP_BACKFILL_LOOP');

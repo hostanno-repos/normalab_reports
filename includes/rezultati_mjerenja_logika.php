@@ -76,24 +76,30 @@ $dozvZaUsporedbu = round($dozvOdstupanje, $odstupanje_decimals);
 $usporediApsolutno = norma_usaglasenost_usporedi_apsolutno($mjvId, $refXs, $refId);
 $isShownRelative = in_array($mjvId, norma_mjerna_shown_relative_ids(), true);
 $isShownAbsolute = in_array($mjvId, norma_mjerna_shown_absolute_ids(), true);
+$debugReason = '';
 
 // --- Usaglašenost (ista logika kao u mpdf skriptama) ---
 if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     $usaglasenost = 'NE';
     $finalusaglasenost = 'NISU USAGLAŠENI';
+    $debugReason = 'Sva tri mjerenja su "--" (nije mjerljivo) -> NE';
 } elseif (($mjvId === 19 || $mjvId === 155) && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     // Kiseonik u inkubatoru: sva tri "-" => DA (absolute skripta)
     $usaglasenost = 'DA';
+    $debugReason = 'Specijalno pravilo O2 (19/155): sva tri "-" -> DA';
 } elseif (($mjvId === 20 || $mjvId === 156) && norma_usaglasenost_sva_tri_crtica($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     // Relativna vlažnost: sva tri "-" => DA (relative skripta)
     $usaglasenost = 'DA';
+    $debugReason = 'Specijalno pravilo vlaznost (20/156): sva tri "-" -> DA';
 } elseif (!$sveBrojcano) {
     if ($isShownRelative || $isShownAbsolute) {
         // script[one-shown-two-not-measurable-relative]/absolute: "-" (nije mjereno) => DA; samo "---" => NE (gore)
         $usaglasenost = 'DA';
+        $debugReason = 'Shown varijanta i nebrojcani unos ("-"/mjesovito) -> DA';
     } else {
         // hidden-relative / absolute: mješovito "-" i brojevi — red se ne ispisuje, ne ruši zaključak
         $usaglasenost = '-';
+        $debugReason = 'Hidden varijanta i nebrojcani unos -> "-" (ne obara final)';
         if (!isset($finalusaglasenost)) {
             $finalusaglasenost = 'su USAGLAŠENI';
         }
@@ -103,15 +109,19 @@ if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $tr
         if ($apsolutnagreska > $dozvZaUsporedbu) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
+            $debugReason = 'Apsolutno pravilo: |dX| > dozvoljeno -> NE';
         } else {
             $usaglasenost = 'DA';
+            $debugReason = 'Apsolutno pravilo: |dX| <= dozvoljeno -> DA';
         }
     } else {
         if ($relativnagreska > $dozvZaUsporedbu) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
+            $debugReason = 'Relativno pravilo: rel. greska > dozvoljeno -> NE';
         } else {
             $usaglasenost = 'DA';
+            $debugReason = 'Relativno pravilo: rel. greska <= dozvoljeno -> DA';
         }
     }
     if (!isset($finalusaglasenost)) {
@@ -121,4 +131,20 @@ if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $tr
 
 if (!isset($finalusaglasenost)) {
     $finalusaglasenost = 'su USAGLAŠENI';
+}
+
+if (!empty($GLOBALS['norma_debug_usaglasenost_collect'])) {
+    if (!isset($GLOBALS['norma_debug_usaglasenost_rows']) || !is_array($GLOBALS['norma_debug_usaglasenost_rows'])) {
+        $GLOBALS['norma_debug_usaglasenost_rows'] = array();
+    }
+    $GLOBALS['norma_debug_usaglasenost_rows'][] = array(
+        'mjernavelicina_id' => $mjvId,
+        'referentna_id' => $refId,
+        'xs' => $refXs,
+        'm1' => $prvomjerenje,
+        'm2' => $drugomjerenje,
+        'm3' => $trecemjerenje,
+        'usaglasenost' => $usaglasenost,
+        'reason' => $debugReason
+    );
 }
