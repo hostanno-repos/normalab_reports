@@ -77,6 +77,7 @@ $usporediApsolutno = norma_usaglasenost_usporedi_apsolutno($mjvId, $refXs, $refI
 $isShownRelative = in_array($mjvId, norma_mjerna_shown_relative_ids(), true);
 $isShownAbsolute = in_array($mjvId, norma_mjerna_shown_absolute_ids(), true);
 $debugReason = '';
+$cmpEpsilon = 1e-9;
 
 // --- Usaglašenost (ista logika kao u mpdf skriptama) ---
 if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
@@ -106,7 +107,7 @@ if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $tr
     }
 } else {
     if ($usporediApsolutno) {
-        if ($apsolutnagreska > $dozvZaUsporedbu) {
+        if (((float)$apsolutnagreska - (float)$dozvZaUsporedbu) > $cmpEpsilon) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
             $debugReason = 'Apsolutno pravilo: |dX| > dozvoljeno -> NE';
@@ -115,7 +116,7 @@ if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $tr
             $debugReason = 'Apsolutno pravilo: |dX| <= dozvoljeno -> DA';
         }
     } else {
-        if ($relativnagreska > $dozvZaUsporedbu) {
+        if (((float)$relativnagreska - (float)$dozvZaUsporedbu) > $cmpEpsilon) {
             $usaglasenost = 'NE';
             $finalusaglasenost = 'NISU USAGLAŠENI';
             $debugReason = 'Relativno pravilo: rel. greska > dozvoljeno -> NE';
