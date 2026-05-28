@@ -198,6 +198,13 @@ if ($onlySingleBackfill) {
                             . ', REF ' . (int)($d['referentna_id'] ?? 0)
                             . ', Xs=' . (string)($d['xs'] ?? '')
                             . ', m=(' . (string)($d['m1'] ?? '') . ',' . (string)($d['m2'] ?? '') . ',' . (string)($d['m3'] ?? '') . ')'
+                            . ', sred=' . (string)($d['srednja'] ?? '')
+                            . ', aps=' . (string)($d['aps'] ?? '')
+                            . ', rel=' . (string)($d['rel'] ?? '')
+                            . ', dozvRaw=' . (string)($d['dozv_raw'] ?? '')
+                            . ', dozvCmp=' . (string)($d['dozv_cmp'] ?? '')
+                            . ', dec=' . (string)($d['decimals'] ?? '')
+                            . ', rule=' . (((int)($d['aps_rule'] ?? 0) === 1) ? 'ABS' : 'REL')
                             . ', usa=' . (string)($d['usaglasenost'] ?? '')
                             . ' -> ' . (string)($d['reason'] ?? '');
                         norma_setup_stream_log('log', $line);

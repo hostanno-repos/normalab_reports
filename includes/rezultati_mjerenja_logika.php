@@ -145,6 +145,13 @@ if (!empty($GLOBALS['norma_debug_usaglasenost_collect'])) {
         'm1' => $prvomjerenje,
         'm2' => $drugomjerenje,
         'm3' => $trecemjerenje,
+        'srednja' => $srednjavrijednost,
+        'aps' => $apsolutnagreska,
+        'rel' => $relativnagreska,
+        'dozv_raw' => $dozvOdstupanje,
+        'dozv_cmp' => $dozvZaUsporedbu,
+        'decimals' => $odstupanje_decimals,
+        'aps_rule' => $usporediApsolutno ? 1 : 0,
         'usaglasenost' => $usaglasenost,
         'reason' => $debugReason
     );
