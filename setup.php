@@ -103,6 +103,9 @@ header('Content-Type: text/html; charset=utf-8');
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (300 po 300)</a>
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
         </p>
+        <p style="margin:8px 0 0;font-size:0.9rem;">
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_single_1671&amp;force=1" style="display:inline-block;padding:8px 12px;background:#0a7;color:#fff;text-decoration:none;border-radius:6px;">Test backfill samo za izvještaj #1671</a>
+        </p>
     </div>
     <div id="setup-live-log">
 <?php
@@ -115,6 +118,9 @@ $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
+$singleBackfillReportId = 1671;
+$onlySingleBackfill = ($setupMode === 'backfill_nisu_usaglaseni_single_1671');
+$singleBackfillForce = $onlySingleBackfill && isset($_GET['force']) && (string) $_GET['force'] === '1';
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni_v2';
 $backfillMigrationIdLegacy = 'backfill_izvjestaji_nisu_usaglaseni';
@@ -126,6 +132,102 @@ $backfillChunkDone = true;
 // Defaults za sažetak (da ne bi bilo undefined pri ranom exit-u)
 $createdUsers = array();
 $zavodUserCreated = false;
+
+if ($onlySingleBackfill) {
+    if (!$singleBackfillForce) {
+        $results[] = array(
+            'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
+            'ok' => false,
+            'message' => 'Nedostaje force=1.'
+        );
+        norma_setup_stream_log('log-err', 'Prekinuto: nedostaje force=1.');
+    } else {
+        norma_setup_stream_log('log-step', 'Test backfill samo za izvještaj #' . $singleBackfillReportId . '...');
+        $stChkReport = $pdo->prepare('SELECT izvjestaji_id, izvjestaji_nisu_usaglaseni FROM izvjestaji WHERE izvjestaji_id = ? LIMIT 1');
+        $stChkReport->execute(array($singleBackfillReportId));
+        $oldReport = $stChkReport->fetch(PDO::FETCH_ASSOC);
+        if (!$oldReport) {
+            $results[] = array(
+                'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
+                'ok' => false,
+                'message' => 'Izvještaj ne postoji.'
+            );
+            norma_setup_stream_log('log-err', 'Izvještaj #' . $singleBackfillReportId . ' ne postoji.');
+        } else {
+            $savedGet = $_GET;
+            $savedCwd = getcwd();
+            $savedLoop = $GLOBALS['norma_backfill_loop_active'] ?? null;
+            $savedDefer = $GLOBALS['norma_backfill_defer_db'] ?? null;
+            $savedRows = $GLOBALS['norma_backfill_rows'] ?? null;
+            $okSingle = false;
+            $singleMsg = '';
+            try {
+                @chdir(__DIR__);
+                putenv('NORMA_SETUP_BACKFILL=1');
+                putenv('NORMA_SETUP_BACKFILL_LOOP=1');
+                $GLOBALS['norma_backfill_loop_active'] = true;
+                $GLOBALS['norma_backfill_defer_db'] = true;
+                $GLOBALS['norma_backfill_rows'] = array();
+                $_GET['izvjestaj'] = $singleBackfillReportId;
+                include __DIR__ . '/pregledizvjestajapdf.php';
+                $newVal = null;
+                if (isset($GLOBALS['norma_backfill_rows']) && is_array($GLOBALS['norma_backfill_rows'])) {
+                    foreach ($GLOBALS['norma_backfill_rows'] as $r) {
+                        if ((int)($r['izvjestaji_id'] ?? 0) === $singleBackfillReportId) {
+                            $newVal = (int)($r['izvjestaji_nisu_usaglaseni'] ?? 0);
+                            break;
+                        }
+                    }
+                }
+                if ($newVal === null) {
+                    throw new RuntimeException('Nije vraćen rezultat rekalkulacije za izvještaj.');
+                }
+                $stUpdSingle = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
+                $stUpdSingle->execute(array($newVal, $singleBackfillReportId));
+                $singleMsg = 'Staro=' . (int)$oldReport['izvjestaji_nisu_usaglaseni'] . ', novo=' . $newVal . '.';
+                $okSingle = true;
+            } catch (Throwable $e) {
+                $singleMsg = $e->getMessage();
+            }
+            $_GET = $savedGet;
+            if ($savedCwd !== false) {
+                @chdir($savedCwd);
+            }
+            if ($savedLoop === null) {
+                unset($GLOBALS['norma_backfill_loop_active']);
+            } else {
+                $GLOBALS['norma_backfill_loop_active'] = $savedLoop;
+            }
+            if ($savedDefer === null) {
+                unset($GLOBALS['norma_backfill_defer_db']);
+            } else {
+                $GLOBALS['norma_backfill_defer_db'] = $savedDefer;
+            }
+            if ($savedRows === null) {
+                unset($GLOBALS['norma_backfill_rows']);
+            } else {
+                $GLOBALS['norma_backfill_rows'] = $savedRows;
+            }
+            putenv('NORMA_SETUP_BACKFILL');
+            putenv('NORMA_SETUP_BACKFILL_LOOP');
+
+            $results[] = array(
+                'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
+                'ok' => $okSingle,
+                'message' => $singleMsg
+            );
+            norma_setup_stream_log($okSingle ? 'log-ok' : 'log-err', 'Izvještaj #' . $singleBackfillReportId . ' — ' . $singleMsg);
+        }
+    }
+    echo "</div>";
+    echo '<h2>Rezime migracija i faza</h2><ul>';
+    foreach ($results as $r) {
+        echo '<li class="' . ($r['ok'] ? 'ok' : 'err') . '">' . htmlspecialchars($r['name'], ENT_QUOTES, 'UTF-8') . ' — ' . htmlspecialchars($r['message'], ENT_QUOTES, 'UTF-8') . '</li>';
+    }
+    echo '</ul>';
+    echo "</body></html>";
+    exit;
+}
 
 // Napredak backfill-a (offset) da možeš nastaviti narednim klikom
 $pdo->exec("CREATE TABLE IF NOT EXISTS `setup_backfill_progress` (
