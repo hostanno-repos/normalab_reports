@@ -13,6 +13,9 @@ if (!function_exists('norma_mjerna_odstupanje_decimals')) {
         if ($mjernaVelicinaId === 11) {
             return 3;
         }
+        if ($mjernaVelicinaId === 15) {
+            return 2;
+        }
         if (in_array($mjernaVelicinaId, [8, 17, 18, 27, 28], true)) {
             return 1;
         }

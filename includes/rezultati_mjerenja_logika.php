@@ -54,11 +54,12 @@ $sveBrojcano = norma_usaglasenost_sva_tri_brojcano($prvomjerenje, $drugomjerenje
 if ($sveBrojcano) {
     $srednjaSirova = ((float) $prvomjerenje + (float) $drugomjerenje + (float) $trecemjerenje) / 3;
     $srednjavrijednost = round($srednjaSirova, 2);
-    $apsolutnagreska = abs($srednjaSirova - $refXs);
+    // Kao u mpdf-includes skriptama: apsolutna greška se računa iz zaokružene srednje vrijednosti.
+    $apsolutnagreska = abs($srednjavrijednost - $refXs);
     if ($refXs == 0.0) {
-        $relativnagreska = abs(($apsolutnagreska / 1) * 100);
+        $relativnagreska = abs(round(($apsolutnagreska / 1) * 100, 2));
     } else {
-        $relativnagreska = abs(($apsolutnagreska / $refXs) * 100);
+        $relativnagreska = abs(round(($apsolutnagreska / $refXs) * 100, 2));
     }
 } else {
     $srednjavrijednost = '-';
