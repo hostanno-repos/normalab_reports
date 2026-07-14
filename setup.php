@@ -244,11 +244,29 @@ $stmtCheck = $pdo->prepare("SELECT 1 FROM `setup_migrations` WHERE `migration_id
 $stmtInsert = $pdo->prepare("INSERT INTO `setup_migrations` (`migration_id`) VALUES (?)");
 
 $GLOBALS['norma_setup_progress_callback'] = function ($current, $total, $reportId) {
+    $GLOBALS['norma_backfill_last_id'] = (int) $reportId;
     norma_setup_stream_log(
         'log',
         'Gotov izvještaj ID ' . (int) $reportId . ' (' . (int) $current . '/' . (int) $total . ').'
     );
 };
+
+register_shutdown_function(function () {
+    $err = error_get_last();
+    if ($err === null) {
+        return;
+    }
+    $fatalTypes = array(E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR);
+    if (!in_array((int) $err['type'], $fatalTypes, true)) {
+        return;
+    }
+    $lastId = (int) ($GLOBALS['norma_backfill_last_id'] ?? 0);
+    $msg = 'FATAL nakon ID ' . $lastId . ': ' . (string) ($err['message'] ?? '')
+        . ' @ ' . (string) ($err['file'] ?? '') . ':' . (string) ($err['line'] ?? '');
+    if (function_exists('norma_setup_stream_log')) {
+        norma_setup_stream_log('log-err', $msg);
+    }
+});
 
 $migrations = array(
     array(

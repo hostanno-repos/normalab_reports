@@ -1,7 +1,7 @@
 <?php
 /**
- * Backfill kolone izvjestaji_nisu_usaglaseni — ista logika kao Zavod PDF (izvjestajmpdf.php + mpdf-includes).
- * Ne mijenja mpdf fajlove; samo ih učitava u headless modu i čita $finalusaglasenost.
+ * Backfill kolone izvjestaji_nisu_usaglaseni — ista logika kao Zavod PDF (mpdf-includes).
+ * Ne mijenja mpdf fajlove; radi ih headless uz zaštitu od include_once / redeclare fatals.
  */
 
 if (!function_exists('norma_backfill_latinica_u_cirilicu')) {
@@ -27,13 +27,32 @@ if (!function_exists('norma_backfill_latinica_u_cirilicu')) {
             $tekst
         );
         $tekst = strtr($tekst, $mapa);
-        $tekst = str_replace(
+
+        return str_replace(
             ['Ǆ', 'ǆ', 'Ǉ', 'ǉ', 'Ǌ', 'ǌ'],
             ['Џ', 'џ', 'Љ', 'љ', 'Њ', 'њ'],
             $tekst
         );
+    }
+}
 
-        return $tekst;
+if (!function_exists('calculateSampleStandardDeviation')) {
+    /**
+     * Ista implementacija kao u mpdf-includes/49.php — definisana jednom da second include ne fatala.
+     */
+    function calculateSampleStandardDeviation($array)
+    {
+        $count = count($array);
+        if ($count <= 1) {
+            return 0;
+        }
+        $mean = array_sum($array) / $count;
+        $squaredDifferences = array_map(function ($value) use ($mean) {
+            return pow($value - $mean, 2);
+        }, $array);
+        $variance = array_sum($squaredDifferences) / ($count - 1);
+
+        return sqrt($variance);
     }
 }
 
@@ -92,10 +111,90 @@ if (!function_exists('norma_backfill_finalusaglasenost_to_flag')) {
     }
 }
 
+if (!function_exists('norma_backfill_bootstrap_report_vars')) {
+    /**
+     * Učitava iste varijable kao mpdf-includes/reports_head.php (svaki put iznova).
+     *
+     * @return array<string,mixed>
+     */
+    function norma_backfill_bootstrap_report_vars(PDO $pdo, int $reportId): array
+    {
+        if (!class_exists('singleObject', false)) {
+            require_once dirname(__DIR__) . DIRECTORY_SEPARATOR . 'class' . DIRECTORY_SEPARATOR . 'getObject.php';
+        }
+
+        $izvjestaj = (new singleObject())->fetch_single_object('izvjestaji', 'izvjestaji_id', $reportId);
+        if (!$izvjestaj) {
+            throw new RuntimeException('Izvještaj #' . $reportId . ' nije pronađen u bootstrapu.');
+        }
+
+        $mjerenjeizvrsio = (new singleObject())->fetch_single_object('kontrolori', 'kontrolori_id', $izvjestaj['izvjestaji_izvrsioid']);
+        $radninalog = (new singleObject())->fetch_single_object('radninalozi', 'radninalozi_id', $izvjestaj['izvjestaji_radninalogid']);
+        $klijent = (new singleObject())->fetch_single_object('klijenti', 'klijenti_id', $radninalog['radninalozi_klijentid']);
+        $mjerilo = (new singleObject())->fetch_single_object('mjerila', 'mjerila_id', $radninalog['radninalozi_mjeriloid']);
+        $vrstauredjaja = (new singleObject())->fetch_single_object('vrsteuredjaja', 'vrsteuredjaja_id', $mjerilo['mjerila_vrstauredjajaid']);
+        $vrsteinspekcije = (new allObjects())->fetch_all_objects('vrsteinspekcije', 'vrsteinspekcije_id', 'ASC');
+
+        $datumInspekcije = !empty($izvjestaj['izvjestaji_datuminspekcije']) ? $izvjestaj['izvjestaji_datuminspekcije'] : '9999-12-31';
+        $stmtRjesenje = $pdo->prepare(
+            'SELECT * FROM rjesenjazaovlascivanje
+             WHERE rjesenjazaovlascivanje_datum_izdavanja <= ?
+             ORDER BY rjesenjazaovlascivanje_datum_izdavanja DESC LIMIT 1'
+        );
+        $stmtRjesenje->execute(array($datumInspekcije));
+        $rjesenje_za_ovlascivanje = $stmtRjesenje->fetch(PDO::FETCH_ASSOC);
+
+        return array(
+            'izvjestaj'                => $izvjestaj,
+            'mjerenjeizvrsio'           => $mjerenjeizvrsio,
+            'radninalog'               => $radninalog,
+            'klijent'                  => $klijent,
+            'mjerilo'                  => $mjerilo,
+            'vrstauredjaja'            => $vrstauredjaja,
+            'vrsteinspekcije'          => $vrsteinspekcije,
+            'rjesenje_za_ovlascivanje' => $rjesenje_za_ovlascivanje,
+            'pdo'                      => $pdo,
+        );
+    }
+}
+
+if (!function_exists('norma_backfill_prepare_zavod_runtime_code')) {
+    /**
+     * Priprema template za više uzastopnih include-a u istom procesu.
+     */
+    function norma_backfill_prepare_zavod_runtime_code(string $templatePath, int $reportId): string
+    {
+        $code = file_get_contents($templatePath);
+        if ($code === false) {
+            throw new RuntimeException('Ne mogu pročitati template: ' . $templatePath);
+        }
+
+        // reports_head je include_once — mora se zamijeniti svježim bootstrapom za svaki izvještaj
+        $code = preg_replace(
+            '/include_once\s*\(\s*[\'"]reports_head\.php[\'"]\s*\)\s*;?/',
+            'extract(norma_backfill_bootstrap_report_vars($pdo, ' . (int) $reportId . '), EXTR_OVERWRITE);',
+            $code,
+            1,
+            $countHead
+        );
+        if ((int) $countHead === 0) {
+            throw new RuntimeException('Template nema include reports_head.php: ' . basename($templatePath));
+        }
+
+        // Ne dozvoli redeclare funkcije iz 49.php / 50.php (uncatchable fatal)
+        $code = preg_replace(
+            '/function\s+calculateSampleStandardDeviation\s*\(\s*\$array\s*\)\s*\{(?:[^{}]++|(?R))*\}/',
+            '/* calculateSampleStandardDeviation: već definisana u backfill bootstrapu */',
+            $code,
+            1
+        );
+
+        return $code;
+    }
+}
+
 if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
     /**
-     * Pokreće isti mpdf-includes/{vrsta}.php kao izvjestajmpdf.php i vraća flag za kolonu.
-     *
      * @return array{
      *   ok:bool,
      *   nisu_usaglaseni?:int,
@@ -118,10 +217,11 @@ if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
 
         $vrstaId = (int) $resolved['vrsta_id'];
         $template = (string) $resolved['template'];
+        $mpdfDir = $projectRoot . DIRECTORY_SEPARATOR . 'mpdf-includes';
+        $runtimePath = $mpdfDir . DIRECTORY_SEPARATOR . '_norma_backfill_runtime.php';
 
         $savedGet = $_GET;
         $savedCwd = getcwd();
-        $savedFinal = $GLOBALS['finalusaglasenost'] ?? null;
 
         try {
             if (!@chdir($projectRoot)) {
@@ -139,12 +239,34 @@ if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
                 }
             }
 
-            unset($finalusaglasenost);
             $_GET['izvjestaj'] = $reportId;
+
+            $runtimeCode = norma_backfill_prepare_zavod_runtime_code($template, $reportId);
+
+            // Očisti state koji može ostati između izvještaja.
+            unset(
+                $finalusaglasenost,
+                $GLOBALS['finalusaglasenost'],
+                $mjernaVelicinaID,
+                $incubatorForceTacnost,
+                $pismo,
+                $usaglasenost,
+                $prvomjerenje,
+                $drugomjerenje,
+                $trecemjerenje
+            );
 
             ob_start();
             try {
-                include $template;
+                if (@file_put_contents($runtimePath, $runtimeCode) !== false) {
+                    include $runtimePath;
+                } else {
+                    // Fallback ako mpdf-includes nije writable: cwd = mpdf-includes da include('script…') radi.
+                    if (!@chdir($mpdfDir)) {
+                        throw new RuntimeException('Ne mogu chdir na mpdf-includes ni pisati runtime fajl.');
+                    }
+                    eval('?>' . $runtimeCode);
+                }
             } finally {
                 ob_end_clean();
             }
@@ -166,10 +288,8 @@ if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
             if ($savedCwd !== false) {
                 @chdir($savedCwd);
             }
-            if ($savedFinal === null) {
-                unset($GLOBALS['finalusaglasenost']);
-            } else {
-                $GLOBALS['finalusaglasenost'] = $savedFinal;
+            if (isset($runtimePath) && is_file($runtimePath)) {
+                @unlink($runtimePath);
             }
         }
     }
@@ -177,49 +297,14 @@ if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
 
 if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni_isolated')) {
     /**
-     * Računa usaglašenost u odvojenom PHP CLI procesu (sigurno od redeclare fatals u mpdf templateima).
-     *
-     * @return array{ok:bool,nisu_usaglaseni?:int,finalusaglasenost?:string,vrsta_id?:int,message?:string}
+     * In-process (sigurno) — CLI više nije potreban.
      */
     function norma_backfill_compute_zavod_nisu_usaglaseni_isolated(
         PDO $pdo,
         int $reportId,
         ?string $projectRoot = null
     ): array {
-        $projectRoot = $projectRoot ?? dirname(__DIR__);
-        $script = __DIR__ . DIRECTORY_SEPARATOR . 'cli_backfill_one_report.php';
-        if (!is_readable($script)) {
-            return array('ok' => false, 'message' => 'Nedostaje cli_backfill_one_report.php');
-        }
-
-        $phpBin = defined('PHP_BINARY') && PHP_BINARY !== '' ? PHP_BINARY : 'php';
-        if (!function_exists('shell_exec') || in_array('shell_exec', array_map('trim', explode(',', (string) ini_get('disable_functions'))), true)) {
-            // Bez CLI izolacije: rizik fatala na mpdf 49/50.php (Cannot redeclare).
-            return norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId, $projectRoot);
-        }
-
-        $cmd = escapeshellarg($phpBin) . ' ' . escapeshellarg($script) . ' ' . (int) $reportId;
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $cmd .= ' 2>NUL';
-        } else {
-            $cmd .= ' 2>/dev/null';
-        }
-
-        $out = @shell_exec($cmd);
-        if ($out === null || trim((string) $out) === '') {
-            // Fallback: isti proces (rizik od redeclare fatals na 49/50)
-            return norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId, $projectRoot);
-        }
-
-        $decoded = json_decode(trim((string) $out), true);
-        if (!is_array($decoded) || !array_key_exists('ok', $decoded)) {
-            return array(
-                'ok'      => false,
-                'message' => 'CLI worker nije vratio validan JSON za #' . $reportId . '. Output: ' . substr(trim((string) $out), 0, 200),
-            );
-        }
-
-        return $decoded;
+        return norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId, $projectRoot);
     }
 }
 
@@ -241,7 +326,7 @@ if (!function_exists('norma_backfill_apply_one_report')) {
             return array('ok' => false, 'report_id' => $reportId, 'message' => 'Izvještaj #' . $reportId . ' ne postoji.');
         }
 
-        $computed = norma_backfill_compute_zavod_nisu_usaglaseni_isolated($pdo, $reportId);
+        $computed = norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId);
         if (empty($computed['ok'])) {
             return array(
                 'ok'        => false,
