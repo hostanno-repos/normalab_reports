@@ -88,8 +88,8 @@ header('Content-Type: text/html; charset=utf-8');
     <div style="margin:1rem 0;padding:1rem;border:1px solid #06c;border-radius:8px;background:#f0f7ff;">
         <h2 style="margin:0 0 0.5rem;font-size:1.05rem;">Filter „Nisu usaglašeni” — backfill svih izvještaja</h2>
         <p style="margin:0 0 0.75rem;font-size:0.92rem;">
-            Za svaki izvještaj pokreće se ista logika kao pri generisanju PDF-a
-            (apsolutno odstupanje u mmHg, ℃, J itd. gdje PDF tako kaže; relativno u % gdje PDF tako kaže).
+            Za svaki izvještaj pokreće se <strong>ista logika kao Zavod PDF</strong>
+            (<code>izvjestajmpdf.php</code> → <code>mpdf-includes/{vrsta}.php</code>, headless).
             Kolona <code>izvjestaji_nisu_usaglaseni</code> se ažurira u bazi.
         </p>
         <p style="margin:0 0 0.5rem;font-size:0.9rem;">
@@ -103,9 +103,13 @@ header('Content-Type: text/html; charset=utf-8');
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (300 po 300)</a>
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
         </p>
-        <p style="margin:8px 0 0;font-size:0.9rem;">
-            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_single_1671&amp;force=1" style="display:inline-block;padding:8px 12px;background:#0a7;color:#fff;text-decoration:none;border-radius:6px;">Test backfill samo za izvještaj #1671</a>
-        </p>
+        <form method="get" action="setup.php" style="margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+            <input type="hidden" name="setup_mode" value="backfill_nisu_usaglaseni_single">
+            <input type="hidden" name="force" value="1">
+            <label for="backfill-single-izvjestaj" style="font-size:0.9rem;">Test backfill za jedan izvještaj (ID):</label>
+            <input type="number" id="backfill-single-izvjestaj" name="izvjestaj" min="1" step="1" required placeholder="npr. 2190" style="width:110px;padding:6px 8px;">
+            <button type="submit" style="padding:8px 12px;background:#0a7;color:#fff;border:none;border-radius:6px;cursor:pointer;">Pokreni</button>
+        </form>
     </div>
     <div id="setup-live-log">
 <?php
@@ -118,8 +122,8 @@ $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
-$singleBackfillReportId = 1671;
-$onlySingleBackfill = ($setupMode === 'backfill_nisu_usaglaseni_single_1671');
+$onlySingleBackfill = ($setupMode === 'backfill_nisu_usaglaseni_single');
+$singleBackfillReportId = (int) ($_GET['izvjestaj'] ?? 0);
 $singleBackfillForce = $onlySingleBackfill && isset($_GET['force']) && (string) $_GET['force'] === '1';
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni_v2';
@@ -134,123 +138,39 @@ $createdUsers = array();
 $zavodUserCreated = false;
 
 if ($onlySingleBackfill) {
+    require_once __DIR__ . '/includes/norma_backfill_zavod_usaglasenost.php';
     if (!$singleBackfillForce) {
         $results[] = array(
-            'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
+            'name' => 'Test backfill za jedan izvještaj',
             'ok' => false,
             'message' => 'Nedostaje force=1.'
         );
         norma_setup_stream_log('log-err', 'Prekinuto: nedostaje force=1.');
+    } elseif ($singleBackfillReportId <= 0) {
+        $results[] = array(
+            'name' => 'Test backfill za jedan izvještaj',
+            'ok' => false,
+            'message' => 'Unesi valjan ID izvještaja.'
+        );
+        norma_setup_stream_log('log-err', 'Prekinuto: nedostaje ili je nevaljan ID izvještaja.');
     } else {
-        norma_setup_stream_log('log-step', 'Test backfill samo za izvještaj #' . $singleBackfillReportId . '...');
-        $stChkReport = $pdo->prepare('SELECT izvjestaji_id, izvjestaji_nisu_usaglaseni FROM izvjestaji WHERE izvjestaji_id = ? LIMIT 1');
-        $stChkReport->execute(array($singleBackfillReportId));
-        $oldReport = $stChkReport->fetch(PDO::FETCH_ASSOC);
-        if (!$oldReport) {
-            $results[] = array(
-                'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
-                'ok' => false,
-                'message' => 'Izvještaj ne postoji.'
+        norma_setup_stream_log('log-step', 'Test backfill (Zavod PDF) samo za izvještaj #' . $singleBackfillReportId . '...');
+        $singleResult = norma_backfill_apply_one_report($pdo, $singleBackfillReportId, true);
+        $results[] = array(
+            'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
+            'ok' => !empty($singleResult['ok']),
+            'message' => (string) ($singleResult['message'] ?? ''),
+        );
+        if (!empty($singleResult['ok'])) {
+            norma_setup_stream_log(
+                'log-ok',
+                'Izvještaj #' . $singleBackfillReportId
+                . ' — vrsta ' . (int) ($singleResult['vrsta_id'] ?? 0)
+                . ', Zavod: ' . (string) ($singleResult['finalusaglasenost'] ?? '')
+                . ' — ' . (string) ($singleResult['message'] ?? '')
             );
-            norma_setup_stream_log('log-err', 'Izvještaj #' . $singleBackfillReportId . ' ne postoji.');
         } else {
-            $savedGet = $_GET;
-            $savedCwd = getcwd();
-            $savedLoop = $GLOBALS['norma_backfill_loop_active'] ?? null;
-            $savedDefer = $GLOBALS['norma_backfill_defer_db'] ?? null;
-            $savedRows = $GLOBALS['norma_backfill_rows'] ?? null;
-            $savedDebugCollect = $GLOBALS['norma_debug_usaglasenost_collect'] ?? null;
-            $savedDebugRows = $GLOBALS['norma_debug_usaglasenost_rows'] ?? null;
-            $okSingle = false;
-            $singleMsg = '';
-            try {
-                @chdir(__DIR__);
-                putenv('NORMA_SETUP_BACKFILL=1');
-                putenv('NORMA_SETUP_BACKFILL_LOOP=1');
-                $GLOBALS['norma_backfill_loop_active'] = true;
-                $GLOBALS['norma_backfill_defer_db'] = true;
-                $GLOBALS['norma_backfill_rows'] = array();
-                $GLOBALS['norma_debug_usaglasenost_collect'] = true;
-                $GLOBALS['norma_debug_usaglasenost_rows'] = array();
-                $_GET['izvjestaj'] = $singleBackfillReportId;
-                include __DIR__ . '/pregledizvjestajapdf.php';
-                $newVal = null;
-                if (isset($GLOBALS['norma_backfill_rows']) && is_array($GLOBALS['norma_backfill_rows'])) {
-                    foreach ($GLOBALS['norma_backfill_rows'] as $r) {
-                        if ((int)($r['izvjestaji_id'] ?? 0) === $singleBackfillReportId) {
-                            $newVal = (int)($r['izvjestaji_nisu_usaglaseni'] ?? 0);
-                            break;
-                        }
-                    }
-                }
-                if ($newVal === null) {
-                    throw new RuntimeException('Nije vraćen rezultat rekalkulacije za izvještaj.');
-                }
-                $stUpdSingle = $pdo->prepare('UPDATE izvjestaji SET izvjestaji_nisu_usaglaseni = ? WHERE izvjestaji_id = ? LIMIT 1');
-                $stUpdSingle->execute(array($newVal, $singleBackfillReportId));
-                $singleMsg = 'Staro=' . (int)$oldReport['izvjestaji_nisu_usaglaseni'] . ', novo=' . $newVal . '.';
-                $okSingle = true;
-                if (isset($GLOBALS['norma_debug_usaglasenost_rows']) && is_array($GLOBALS['norma_debug_usaglasenost_rows'])) {
-                    $dbgRows = $GLOBALS['norma_debug_usaglasenost_rows'];
-                    norma_setup_stream_log('log-step', 'DEBUG redovi usaglasenosti za izvjestaj #' . $singleBackfillReportId . ':');
-                    foreach ($dbgRows as $d) {
-                        $line = 'MV ' . (int)($d['mjernavelicina_id'] ?? 0)
-                            . ', REF ' . (int)($d['referentna_id'] ?? 0)
-                            . ', Xs=' . (string)($d['xs'] ?? '')
-                            . ', m=(' . (string)($d['m1'] ?? '') . ',' . (string)($d['m2'] ?? '') . ',' . (string)($d['m3'] ?? '') . ')'
-                            . ', sred=' . (string)($d['srednja'] ?? '')
-                            . ', aps=' . (string)($d['aps'] ?? '')
-                            . ', rel=' . (string)($d['rel'] ?? '')
-                            . ', dozvRaw=' . (string)($d['dozv_raw'] ?? '')
-                            . ', dozvCmp=' . (string)($d['dozv_cmp'] ?? '')
-                            . ', dec=' . (string)($d['decimals'] ?? '')
-                            . ', rule=' . (((int)($d['aps_rule'] ?? 0) === 1) ? 'ABS' : 'REL')
-                            . ', usa=' . (string)($d['usaglasenost'] ?? '')
-                            . ' -> ' . (string)($d['reason'] ?? '');
-                        norma_setup_stream_log('log', $line);
-                    }
-                }
-            } catch (Throwable $e) {
-                $singleMsg = $e->getMessage();
-            }
-            $_GET = $savedGet;
-            if ($savedCwd !== false) {
-                @chdir($savedCwd);
-            }
-            if ($savedLoop === null) {
-                unset($GLOBALS['norma_backfill_loop_active']);
-            } else {
-                $GLOBALS['norma_backfill_loop_active'] = $savedLoop;
-            }
-            if ($savedDefer === null) {
-                unset($GLOBALS['norma_backfill_defer_db']);
-            } else {
-                $GLOBALS['norma_backfill_defer_db'] = $savedDefer;
-            }
-            if ($savedRows === null) {
-                unset($GLOBALS['norma_backfill_rows']);
-            } else {
-                $GLOBALS['norma_backfill_rows'] = $savedRows;
-            }
-            if ($savedDebugCollect === null) {
-                unset($GLOBALS['norma_debug_usaglasenost_collect']);
-            } else {
-                $GLOBALS['norma_debug_usaglasenost_collect'] = $savedDebugCollect;
-            }
-            if ($savedDebugRows === null) {
-                unset($GLOBALS['norma_debug_usaglasenost_rows']);
-            } else {
-                $GLOBALS['norma_debug_usaglasenost_rows'] = $savedDebugRows;
-            }
-            putenv('NORMA_SETUP_BACKFILL');
-            putenv('NORMA_SETUP_BACKFILL_LOOP');
-
-            $results[] = array(
-                'name' => 'Test backfill za izvještaj #' . $singleBackfillReportId,
-                'ok' => $okSingle,
-                'message' => $singleMsg
-            );
-            norma_setup_stream_log($okSingle ? 'log-ok' : 'log-err', 'Izvještaj #' . $singleBackfillReportId . ' — ' . $singleMsg);
+            norma_setup_stream_log('log-err', 'Izvještaj #' . $singleBackfillReportId . ' — ' . (string) ($singleResult['message'] ?? ''));
         }
     }
     echo "</div>";
@@ -489,7 +409,7 @@ if ($onlyBackfillChunk || $stopAfterBackfillChunk) {
     $backfillRestartUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&force=1&reset=1';
     if ($stopAfterBackfillChunk && !$backfillChunkDone && !empty($backfillContinueUrl)) {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Nastavi backfill (sljedećih ' . (int)$backfillChunkLimit . ')</a></p>';
-        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „Nisu usaglašeni” sada prati istu logiku kao PDF (apsolutno u jedinicama mjere gdje treba, relativno u % gdje treba). Nakon deploya obavezno pokreni backfill v2.</p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „Nisu usaglašeni” sada prati istu logiku kao Zavod PDF (mpdf-includes). Nakon deploya obavezno pokreni backfill v2.</p>';
     } else {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><strong>Backfill završena.</strong></p>';
         echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillRestartUrl, ENT_QUOTES, 'UTF-8') . '">Ponovi cijeli backfill od početka</a> (ako želiš ponovno prebrojati sve nakon novog deploya).</p>';

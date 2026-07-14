@@ -1,8 +1,8 @@
 <?php
 /**
- * Backfill kolone izvjestaji_nisu_usaglaseni (ista logika kao pregledizvjestajapdf.php do zaključka).
+ * Backfill kolone izvjestaji_nisu_usaglaseni (ista logika kao Zavod PDF — mpdf-includes).
  *
- * Faza 1: za svaki ID pokrene PDF logiku s odgođenim UPDATE-om — rezultati u $GLOBALS pa u JSON.
+ * Faza 1: za svaki ID pokrene Zavod template headless — rezultati u $GLOBALS pa u JSON.
  * Faza 2: jedna transakcija, batch UPDATE (brže od pojedinačnog commit-a po redu).
  *
  * @param PDO $pdo
@@ -17,6 +17,8 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
         if (!($pdo instanceof PDO)) {
             return array('ok' => false, 'message' => 'Nema valjane PDO konekcije.');
         }
+
+        require_once __DIR__ . DIRECTORY_SEPARATOR . 'norma_backfill_zavod_usaglasenost.php';
 
         $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 300);
         $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
@@ -72,22 +74,10 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             return array('ok' => false, 'message' => 'Ne mogu chdir na korijen projekta: ' . $root);
         }
 
-        $pdfPath = $root . DIRECTORY_SEPARATOR . 'pregledizvjestajapdf.php';
-        if (!is_readable($pdfPath)) {
-            @chdir($savedCwd);
-
-            return array('ok' => false, 'message' => 'Nedostaje pregledizvjestajapdf.php');
-        }
-
         $jsonDir = $root . DIRECTORY_SEPARATOR . 'tmp';
         $jsonPath = $jsonDir . DIRECTORY_SEPARATOR . 'norma_backfill_nisu_usaglaseni.json';
         @mkdir($jsonDir, 0775, true);
 
-        putenv('NORMA_SETUP_BACKFILL=1');
-        putenv('NORMA_SETUP_BACKFILL_LOOP=1');
-        $GLOBALS['norma_backfill_loop_active'] = true;
-
-        $GLOBALS['norma_backfill_defer_db'] = true;
         $GLOBALS['norma_backfill_rows'] = array();
 
         $fail = 0;
@@ -99,14 +89,20 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                 $id = (int) $id;
                 $n++;
                 try {
-                    (function () use ($pdfPath, $id) {
-                        $_GET['izvjestaj'] = $id;
-                        require $pdfPath;
-                    })();
+                    $computed = norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $id, $root);
+                    if (empty($computed['ok'])) {
+                        throw new RuntimeException((string) ($computed['message'] ?? 'Nepoznata greška.'));
+                    }
+                    $GLOBALS['norma_backfill_rows'][] = array(
+                        'izvjestaji_id'              => $id,
+                        'izvjestaji_nisu_usaglaseni' => (int) ($computed['nisu_usaglaseni'] ?? 0),
+                        'finalusaglasenost'          => (string) ($computed['finalusaglasenost'] ?? ''),
+                        'vrsta_id'                   => (int) ($computed['vrsta_id'] ?? 0),
+                    );
                 } catch (Throwable $e) {
                     $fail++;
                     if ($firstErr === '') {
-                        $firstErr = $e->getMessage();
+                        $firstErr = 'ID ' . $id . ': ' . $e->getMessage();
                     }
                 }
 
@@ -125,6 +121,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             $payload = array(
                 'generated_at' => date('c'),
+                'source'       => 'zavod_mpdf_includes',
                 'total_izvjestaja_u_bazi' => $total,
                 'chunk_offset' => $offset,
                 'chunk_limit'  => $limit,
@@ -138,7 +135,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             if ($fail > 0) {
                 return array(
                     'ok'      => false,
-                    'message' => "Backfill: greške na {$fail} od {$total} izvještaja. Prva: {$firstErr}. JSON (djelomično): {$jsonPath}",
+                    'message' => "Backfill: greške na {$fail} od {$n} u chunk-u. Prva: {$firstErr}. JSON (djelomično): {$jsonPath}",
                 );
             }
 
@@ -167,20 +164,14 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             return array(
                 'ok'      => true,
-                'message' => 'Backfill izvjestaji_nisu_usaglaseni: ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
+                'message' => 'Backfill izvjestaji_nisu_usaglaseni (Zavod PDF): ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
                 'done' => $done,
                 'total' => $total,
                 'processed' => $n,
                 'next_offset' => $nextOffset,
             );
         } finally {
-            putenv('NORMA_SETUP_BACKFILL_LOOP');
-            putenv('NORMA_SETUP_BACKFILL');
-            unset(
-                $GLOBALS['norma_backfill_loop_active'],
-                $GLOBALS['norma_backfill_defer_db'],
-                $GLOBALS['norma_backfill_rows']
-            );
+            unset($GLOBALS['norma_backfill_rows']);
             @chdir($savedCwd);
         }
     }
