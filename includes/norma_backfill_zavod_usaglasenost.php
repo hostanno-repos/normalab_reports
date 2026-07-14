@@ -158,6 +158,80 @@ if (!function_exists('norma_backfill_bootstrap_report_vars')) {
     }
 }
 
+if (!function_exists('norma_backfill_strip_redeclare_functions')) {
+    /**
+     * Ukloni top-level function definition by name (brace-count, bez recursive regexa).
+     */
+    function norma_backfill_strip_redeclare_functions(string $code, string $functionName): string
+    {
+        $needle = 'function ' . $functionName;
+        $pos = strpos($code, $needle);
+        if ($pos === false) {
+            // moguće: function\n  name  ili više razmaka
+            if (!preg_match('/function\s+' . preg_quote($functionName, '/') . '\s*\(/', $code, $m, PREG_OFFSET_CAPTURE)) {
+                return $code;
+            }
+            $pos = (int) $m[0][1];
+            $needleLen = strlen($m[0][0]);
+        } else {
+            // nađi otvorenu zagradu argumenta
+            $openArgs = strpos($code, '(', $pos);
+            if ($openArgs === false) {
+                return $code;
+            }
+            $needleLen = $openArgs - $pos; // unused — work from $pos
+        }
+
+        $bracePos = strpos($code, '{', $pos);
+        if ($bracePos === false) {
+            return $code;
+        }
+
+        $len = strlen($code);
+        $depth = 0;
+        $inString = false;
+        $stringChar = '';
+        $escaped = false;
+
+        for ($i = $bracePos; $i < $len; $i++) {
+            $ch = $code[$i];
+
+            if ($inString) {
+                if ($escaped) {
+                    $escaped = false;
+                    continue;
+                }
+                if ($ch === '\\') {
+                    $escaped = true;
+                    continue;
+                }
+                if ($ch === $stringChar) {
+                    $inString = false;
+                }
+                continue;
+            }
+
+            if ($ch === '"' || $ch === "'") {
+                $inString = true;
+                $stringChar = $ch;
+                continue;
+            }
+
+            if ($ch === '{') {
+                $depth++;
+            } elseif ($ch === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    $replacement = '/* ' . $functionName . ': već definisana u backfill bootstrapu */';
+                    return substr($code, 0, $pos) . $replacement . substr($code, $i + 1);
+                }
+            }
+        }
+
+        return $code;
+    }
+}
+
 if (!function_exists('norma_backfill_prepare_zavod_runtime_code')) {
     /**
      * Priprema template za više uzastopnih include-a u istom procesu.
@@ -182,12 +256,7 @@ if (!function_exists('norma_backfill_prepare_zavod_runtime_code')) {
         }
 
         // Ne dozvoli redeclare funkcije iz 49.php / 50.php (uncatchable fatal)
-        $code = preg_replace(
-            '/function\s+calculateSampleStandardDeviation\s*\(\s*\$array\s*\)\s*\{(?:[^{}]++|(?R))*\}/',
-            '/* calculateSampleStandardDeviation: već definisana u backfill bootstrapu */',
-            $code,
-            1
-        );
+        $code = norma_backfill_strip_redeclare_functions($code, 'calculateSampleStandardDeviation');
 
         return $code;
     }

@@ -86,11 +86,21 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
         $firstErr = '';
         $failedIds = array();
         $n = 0;
+        $heartbeatPath = $jsonDir . DIRECTORY_SEPARATOR . 'norma_backfill_heartbeat.txt';
 
         try {
             foreach ($ids as $id) {
                 $id = (int) $id;
                 $n++;
+                $GLOBALS['norma_backfill_last_id'] = $id;
+                @file_put_contents(
+                    $heartbeatPath,
+                    date('c') . " START id={$id} n={$n} offset={$offset} total={$total}\n",
+                    FILE_APPEND
+                );
+                if (function_exists('norma_setup_stream_log')) {
+                    norma_setup_stream_log('log', 'Radim izvještaj ID ' . $id . ' (' . ($offset + $n) . '/' . $total . ')…');
+                }
                 try {
                     $computed = norma_backfill_compute_zavod_nisu_usaglaseni_isolated($pdo, $id, $root);
                     if (empty($computed['ok'])) {
@@ -102,11 +112,24 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                         'finalusaglasenost'          => (string) ($computed['finalusaglasenost'] ?? ''),
                         'vrsta_id'                   => (int) ($computed['vrsta_id'] ?? 0),
                     );
+                    @file_put_contents(
+                        $heartbeatPath,
+                        date('c') . " OK id={$id} nisu=" . (int) ($computed['nisu_usaglaseni'] ?? 0) . "\n",
+                        FILE_APPEND
+                    );
                 } catch (Throwable $e) {
                     $fail++;
                     $failedIds[] = $id;
                     if ($firstErr === '') {
                         $firstErr = 'ID ' . $id . ': ' . $e->getMessage();
+                    }
+                    @file_put_contents(
+                        $heartbeatPath,
+                        date('c') . " FAIL id={$id} " . $e->getMessage() . "\n",
+                        FILE_APPEND
+                    );
+                    if (function_exists('norma_setup_stream_log')) {
+                        norma_setup_stream_log('log-err', 'Greška ID ' . $id . ': ' . $e->getMessage());
                     }
                 }
 
