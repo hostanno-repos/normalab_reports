@@ -100,12 +100,13 @@ header('Content-Type: text/html; charset=utf-8');
             <?php } ?>
         </p>
         <p style="margin:0;font-size:0.9rem;">
-            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (150)</a>
-            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;auto=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi (100, pa 10 s pauza)</a>
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#088;color:#fff;text-decoration:none;border-radius:6px;">Samo jedan chunk (100, ručno)</a>
+            <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1&amp;auto=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
         </p>
         <p style="margin:6px 0 0;font-size:0.85rem;color:#444;">
             Samo panel (bez pokretanja): <a href="setup.php?setup_mode=backfill_menu">setup.php?setup_mode=backfill_menu</a>.
-            Radi po <strong>150</strong> — poslije svakog chunka klikni <strong>Nastavi</strong> (nema automatskog nastavka).
+            Radi po <strong>100</strong>; sa auto stranica se završi, pa za <strong>10 s</strong> sama krene sljedećih 100.
         </p>
         <form method="get" action="setup.php" style="margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
             <input type="hidden" name="setup_mode" value="backfill_nisu_usaglaseni_single">
@@ -121,20 +122,21 @@ norma_setup_stream_log('log', 'Konekcija na bazu uspostavljena.');
 
 $results = array();
 
-// Chunk backfill (klikni "Nastavi" da ide 150 po 150)
+// Chunk backfill (100 po 100; auto=1 → pauza 10 s pa sljedeći chunk)
 $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
 $onlyBackfillMenu = ($setupMode === 'backfill_menu');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
-$backfillAutoContinue = false; // nikad auto — korisnik klikće Nastavi
+$backfillAutoContinue = $onlyBackfillChunk && isset($_GET['auto']) && (string) $_GET['auto'] === '1';
 $onlySingleBackfill = ($setupMode === 'backfill_nisu_usaglaseni_single');
 $singleBackfillReportId = (int) ($_GET['izvjestaj'] ?? 0);
 $singleBackfillForce = $onlySingleBackfill && isset($_GET['force']) && (string) $_GET['force'] === '1';
 
 $backfillMigrationId = 'backfill_izvjestaji_nisu_usaglaseni_v2';
 $backfillMigrationIdLegacy = 'backfill_izvjestaji_nisu_usaglaseni';
-$backfillChunkLimit = 150;
+$backfillChunkLimit = 100;
+$backfillAutoDelaySec = 10;
 $stopAfterBackfillChunk = false;
 $backfillContinueUrl = '';
 $backfillChunkDone = true;
@@ -147,9 +149,12 @@ if ($onlyBackfillMenu) {
     norma_setup_stream_log('log', 'Backfill panel — ništa se ne pokreće dok ne klikneš dugme ili formu iznad.');
     echo "</div>";
     echo '<p style="margin:1rem 0;padding:0 0.5rem;font-size:0.92rem;">'
+        . '<a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;auto=1" '
+        . 'style="display:inline-block;margin-right:8px;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">'
+        . 'Pokreni (100, pa 10 s pauza)</a>'
         . '<a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" '
-        . 'style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">'
-        . 'Pokreni / nastavi backfill (150)</a>'
+        . 'style="display:inline-block;padding:10px 14px;background:#088;color:#fff;text-decoration:none;border-radius:6px;">'
+        . 'Samo jedan chunk (100)</a>'
         . '</p>';
     echo "</body></html>";
     exit;
@@ -394,8 +399,11 @@ foreach ($migrations as $m) {
                         $stopAfterBackfillChunk = true;
                         $backfillChunkDone = false;
                         $backfillContinueUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk'
-                            . ($backfillForce ? '&force=1' : '');
-                        $okMsg .= ' (klikni Nastavi za sljedećih ' . (int)$backfillChunkLimit . ')';
+                            . ($backfillForce ? '&force=1' : '')
+                            . ($backfillAutoContinue ? '&auto=1' : '');
+                        $okMsg .= $backfillAutoContinue
+                            ? ' (za ' . (int) $backfillAutoDelaySec . ' s kreće sljedećih ' . (int) $backfillChunkLimit . ')'
+                            : ' (klikni Nastavi za sljedećih ' . (int) $backfillChunkLimit . ')';
                     }
                 } else {
                     $stmtInsert->execute(array($migrationId));
@@ -445,10 +453,24 @@ if ($onlyBackfillChunk || $stopAfterBackfillChunk) {
     $backfillRestartUrl = 'setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&force=1&reset=1';
     if ($stopAfterBackfillChunk && !$backfillChunkDone && !empty($backfillContinueUrl)) {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '" style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Nastavi backfill (sljedećih ' . (int)$backfillChunkLimit . ')</a></p>';
-        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Filter „Nisu usaglašeni” sada prati istu logiku kao Zavod PDF (mpdf-includes). Nastavi 150 po 150 dok ne završiš.</p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem; font-size: 0.9rem;">Chunk ' . (int) $backfillChunkLimit . ' završen. Filter prati Zavod PDF usaglašenost.</p>';
+        if ($backfillAutoContinue) {
+            $delayMs = (int) $backfillAutoDelaySec * 1000;
+            norma_setup_stream_log('log-step', 'Chunk gotov — za ' . (int) $backfillAutoDelaySec . ' s kreće sljedećih ' . (int) $backfillChunkLimit . '…');
+            echo '<p id="backfill-auto-countdown" style="margin:0.5rem 0;padding:0 0.5rem;font-size:0.95rem;color:#06c;">'
+                . 'Sljedeći chunk kreće za <strong>' . (int) $backfillAutoDelaySec . '</strong> s. Ne zatvaraj stranicu.</p>';
+            // meta refresh + JS: request je gotov, novi request tek nakon pauze
+            echo '<meta http-equiv="refresh" content="' . (int) $backfillAutoDelaySec . ';url=' . htmlspecialchars($backfillContinueUrl, ENT_QUOTES, 'UTF-8') . '">';
+            echo '<script>(function(){'
+                . 'var sec=' . (int) $backfillAutoDelaySec . ';'
+                . 'var url=' . json_encode($backfillContinueUrl) . ';'
+                . 'var el=document.getElementById("backfill-auto-countdown");'
+                . 'var t=setInterval(function(){sec--;if(el){el.innerHTML="Sljedeći chunk kreće za <strong>"+sec+"</strong> s. Ne zatvaraj stranicu.";}if(sec<=0){clearInterval(t);window.location.href=url;}},1000);'
+                . '})();</script>';
+        }
     } else {
         echo '<p style="margin: 1rem 0; padding: 0 0.5rem;"><strong>Backfill završena.</strong></p>';
-        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillRestartUrl, ENT_QUOTES, 'UTF-8') . '">Ponovi cijeli backfill od početka</a>.</p>';
+        echo '<p style="margin: 0.5rem 0; padding: 0 0.5rem;"><a href="' . htmlspecialchars($backfillRestartUrl . '&auto=1', ENT_QUOTES, 'UTF-8') . '">Ponovi od početka (100 + 10 s pauza)</a>.</p>';
     }
     echo "</div>";
     echo "</body></html>";
