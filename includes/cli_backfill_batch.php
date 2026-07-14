@@ -17,7 +17,7 @@ if (!isset($pdo) || !($pdo instanceof PDO)) {
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'run_backfill_nisu_usaglaseni.php';
 
-$chunkSize = 300;
+$chunkSize = 150;
 $offset = 0;
 $total = (int) $pdo->query('SELECT COUNT(*) FROM `izvjestaji`')->fetchColumn();
 

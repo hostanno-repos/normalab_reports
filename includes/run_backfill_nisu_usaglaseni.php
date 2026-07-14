@@ -23,9 +23,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
         @set_time_limit(0);
         @ini_set('max_execution_time', '0');
 
-        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 300);
+        $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 150);
         $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
-        $limit = $limit > 0 ? $limit : 300;
+        $limit = $limit > 0 ? $limit : 150;
         $offset = $offset >= 0 ? $offset : 0;
 
         $chk = $pdo->query("SHOW COLUMNS FROM `izvjestaji` LIKE 'izvjestaji_nisu_usaglaseni'")->fetch(PDO::FETCH_ASSOC);
