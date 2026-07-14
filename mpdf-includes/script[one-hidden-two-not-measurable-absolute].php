@@ -59,24 +59,22 @@
     }
 
     //USAGLAŠENOST
-    if (isset($incubatorForceTacnost)) {
-        $tacnost = (int) $incubatorForceTacnost;
-    } elseif (isset($mjernaVelicinaID)) {
-        if ($mjernaVelicinaID == 11) {
+    if(isset($mjernaVelicinaID)){
+        if($mjernaVelicinaID == 11){
             $tacnost = 3;
-        } elseif ($mjernaVelicinaID == 8 || $mjernaVelicinaID == 18 || $mjernaVelicinaID == 28 || $mjernaVelicinaID == 17) {
+        }else if($mjernaVelicinaID == 8 || $mjernaVelicinaID == 18 || $mjernaVelicinaID == 28 || $mjernaVelicinaID == 17){
             // Za mjerne veličine 8, 17, 18, 28 dozvoljeno odstupanje zaokružujemo na 1 decimalu
             $tacnost = 1;
-        } else {
+        }else{
             $tacnost = 0;
         }
-    } else {
-        $tacnost = 0;
+    }else{
+         $tacnost = 0;
     }
 
-    // Posebna logika za kiseonik u inkubatoru (mj. veličina 19 ili 155):
+    // Posebna logika za kiseonik u inkubatoru (mj. veličina 19):
     // sva tri mjerenja "-" => red sa "-" i usaglašenost DA
-    $isO2_19 = isset($mjernavelicina) && in_array((int) $mjernavelicina['mjernevelicine_id'], [19, 155], true);
+    $isO2_19 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 155;
     
     if ($isO2_19 && $prvomjerenje == "-" && $drugomjerenje == "-" && $trecemjerenje == "-") {
         if(isset($pismo) && $pismo == "LAT"){$usaglasenost = "DA";}else{$usaglasenost = "ДА"; };

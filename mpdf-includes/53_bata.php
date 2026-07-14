@@ -49,7 +49,278 @@ $inspekcijuovjerio = $inspekcijuovjerio->fetch_single_object("kontrolori", "kont
     <!-- PREGLED MJERILA -->
     <!--<p><strong>Испитивање тачности неонаталних и педијатријских инкубатора:</strong></p>-->
 
-    <?php $pismo = 'LAT'; include_once('incubator_zavod_tables.php'); ?>
+    <!-- #17 Temperatura zraka -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 17);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 17,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Temperatura zraka</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs [℃]</th>
+                <th colspan="3">Xm [℃]</th>
+                <th rowspan="2">&lt;Xm&gt; [℃]</th>
+                <th rowspan="2">ΔX [℃]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-absolute].php'); ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
+
+    <!-- #18 Temperatura kože -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 18);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 18,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Temperatura kože</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs [℃]</th>
+                <th colspan="3">Xm [℃]</th>
+                <th rowspan="2">&lt;Xm&gt; [℃]</th>
+                <th rowspan="2">ΔX [℃]</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            $mjernaVelicinaID = 18;
+            include('script[one-hidden-two-not-measurable-absolute].php'); 
+            ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
+
+    <!-- #19 Kiseonik -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 19);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 19,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Kiseonik</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs (%)</th>
+                <th colspan="3">Xm (%)</th>
+                <th rowspan="2">&lt;Xm&gt; (%)</th>
+                <th rowspan="2">ΔX (%)</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-absolute].php'); ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
+
+    <!-- #20 Relativna vlažnost -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 20);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 20,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Relativna vlažnost</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs (%)</th>
+                <th colspan="3">Xm (%)</th>
+                <th rowspan="2">&lt;Xm&gt; (%)</th>
+                <th rowspan="2">ΔX (%)</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php $pismo = "LAT"; include('script[one-hidden-two-not-measurable-relative].php'); ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
+
+    <!-- #21 Masa 0-2 kg -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 21);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 21,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Masa (0-2 [kg])</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs (kg)</th>
+                <th colspan="3">Xm (kg)</th>
+                <th rowspan="2">&lt;Xm&gt; (kg)</th>
+                <th rowspan="2">ΔX (kg)</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php include('script[one-shown-two-not-measurable-relative].php'); ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
+
+    <!-- #22 Masa 0-10 kg -->
+    <?php
+    // MJERNA VELIČINA
+    $mjernavelicina = new singleObject;
+    $mjernavelicina = $mjernavelicina->fetch_single_object('mjernevelicine', 'mjernevelicine_id', 22);
+
+    //SVI REZULTATI
+    $svirezultati = new allObjectsBy2;
+    $svirezultati = $svirezultati->fetch_all_objects_by2('rezultatimjerenja', 'rezultatimjerenja_mjernavelicinaid', 22,'rezultatimjerenja_izvjestajid', $_GET['izvjestaj'], 'rezultatimjerenja_id', 'ASC');
+
+    if(true){ ?>
+
+    <p style="text-align:center;">Masa (0-10 [kg])</p>
+
+    <?php
+    //REFERENTNE VRIJEDNOSTI
+    $referentnevrijednosti = new allObjectsBy;
+    $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by('referentnevrijednosti', 'referentnevrijednosti_mjernavelicinaid', $mjernavelicina['mjernevelicine_id'], 'referentnevrijednosti_referentnavrijednost', 'ASC');
+    ?>
+    <table cellpadding="5" cellspacing="0" width="100%" class="rezultati-otkucaji">
+        <thead>
+            <tr>
+                <th rowspan="2">Xs (kg)</th>
+                <th colspan="3">Xm (kg)</th>
+                <th rowspan="2">&lt;Xm&gt; (kg)</th>
+                <th rowspan="2">ΔX (kg)</th>
+                <th rowspan="2">δ [%]</th>
+                <th rowspan="2">Dozvoljeno odstupanje</th>
+                <th rowspan="2">Usaglašenost</th>
+            </tr>
+            <tr>
+                <th>1</th>
+                <th>2</th>
+                <th>3</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php include('script[one-shown-two-not-measurable-relative].php'); ?>
+        </tbody>
+    </table>
+
+    <br />
+
+    <?php } ?>
 </div>
 
 <style>
