@@ -21,7 +21,7 @@ if (!isset($finalusaglasenost)) {
 // Relativna vlažnost u inkubatoru (mj. veličina 20):
 // ako su sva tri mjerenja "-" želimo red sa "-" i usaglašenost DA,
 // ali samo za tu mjernu veličinu
-$isRelHum20 = isset($mjernavelicina) && (int)$mjernavelicina['mjernevelicine_id'] === 156;
+$isRelHum20 = isset($mjernavelicina) && in_array((int) $mjernavelicina['mjernevelicine_id'], [20, 156], true);
 
 foreach ($referentnevrijednosti as $referentnavrijednost) {
     include __DIR__ . '/../includes/rezultati_mjerenja_logika.php';
