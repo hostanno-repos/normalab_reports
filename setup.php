@@ -103,6 +103,9 @@ header('Content-Type: text/html; charset=utf-8');
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" style="display:inline-block;margin-right:8px;padding:8px 12px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">Pokreni / nastavi backfill (300 po 300)</a>
             <a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1&amp;reset=1" style="display:inline-block;padding:8px 12px;background:#555;color:#fff;text-decoration:none;border-radius:6px;">Od početka (reset)</a>
         </p>
+        <p style="margin:6px 0 0;font-size:0.85rem;color:#444;">
+            Samo panel (bez pokretanja): <a href="setup.php?setup_mode=backfill_menu">setup.php?setup_mode=backfill_menu</a>
+        </p>
         <form method="get" action="setup.php" style="margin:10px 0 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
             <input type="hidden" name="setup_mode" value="backfill_nisu_usaglaseni_single">
             <input type="hidden" name="force" value="1">
@@ -120,6 +123,7 @@ $results = array();
 // Chunk backfill (klikni "Nastavi" da ide 300 po 300)
 $setupMode = (string)($_GET['setup_mode'] ?? '');
 $onlyBackfillChunk = ($setupMode === 'backfill_nisu_usaglaseni_chunk');
+$onlyBackfillMenu = ($setupMode === 'backfill_menu');
 $backfillForce = $onlyBackfillChunk && isset($_GET['force']) && (string) $_GET['force'] === '1';
 $backfillReset = $onlyBackfillChunk && isset($_GET['reset']) && (string) $_GET['reset'] === '1';
 $onlySingleBackfill = ($setupMode === 'backfill_nisu_usaglaseni_single');
@@ -136,6 +140,18 @@ $backfillChunkDone = true;
 // Defaults za sažetak (da ne bi bilo undefined pri ranom exit-u)
 $createdUsers = array();
 $zavodUserCreated = false;
+
+if ($onlyBackfillMenu) {
+    norma_setup_stream_log('log', 'Backfill panel — ništa se ne pokreće dok ne klikneš dugme ili formu iznad.');
+    echo "</div>";
+    echo '<p style="margin:1rem 0;padding:0 0.5rem;font-size:0.92rem;">'
+        . '<a href="setup.php?setup_mode=backfill_nisu_usaglaseni_chunk&amp;force=1" '
+        . 'style="display:inline-block;padding:10px 14px;background:#06c;color:#fff;text-decoration:none;border-radius:6px;">'
+        . 'Sada pokreni / nastavi backfill (300)</a>'
+        . '</p>';
+    echo "</body></html>";
+    exit;
+}
 
 if ($onlySingleBackfill) {
     require_once __DIR__ . '/includes/norma_backfill_zavod_usaglasenost.php';
