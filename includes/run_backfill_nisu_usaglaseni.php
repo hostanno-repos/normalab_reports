@@ -2,8 +2,8 @@
 /**
  * Backfill kolone izvjestaji_nisu_usaglaseni (ista logika kao Zavod PDF — mpdf-includes).
  *
- * Faza 1: za svaki ID pokrene Zavod template headless — rezultati u $GLOBALS pa u JSON.
- * Faza 2: jedna transakcija, batch UPDATE (brže od pojedinačnog commit-a po redu).
+ * Svaki izvještaj se racuna u izolovanom PHP CLI procesu (mpdf 49/50.php inače prave
+ * "Cannot redeclare calculateSampleStandardDeviation" i ubiju cijeli request).
  *
  * @param PDO $pdo
  * @param callable|null $onProgress function(int $current, int $total, int $reportId): void
@@ -19,6 +19,9 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
         }
 
         require_once __DIR__ . DIRECTORY_SEPARATOR . 'norma_backfill_zavod_usaglasenost.php';
+
+        @set_time_limit(0);
+        @ini_set('max_execution_time', '0');
 
         $limit = $limit ?? (int)($GLOBALS['norma_setup_backfill_chunk_limit'] ?? 300);
         $offset = $offset ?? (int)($GLOBALS['norma_setup_backfill_chunk_offset'] ?? 0);
@@ -49,7 +52,6 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             );
         }
 
-        // LIMIT/OFFSET moraju biti literalni int u SQL-u (PDO ih inače binda kao string → 1064 na MariaDB).
         $limit = (int) $limit;
         $offset = (int) $offset;
         $ids = $pdo->query(
@@ -82,6 +84,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
         $fail = 0;
         $firstErr = '';
+        $failedIds = array();
         $n = 0;
 
         try {
@@ -89,7 +92,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                 $id = (int) $id;
                 $n++;
                 try {
-                    $computed = norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $id, $root);
+                    $computed = norma_backfill_compute_zavod_nisu_usaglaseni_isolated($pdo, $id, $root);
                     if (empty($computed['ok'])) {
                         throw new RuntimeException((string) ($computed['message'] ?? 'Nepoznata greška.'));
                     }
@@ -101,6 +104,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                     );
                 } catch (Throwable $e) {
                     $fail++;
+                    $failedIds[] = $id;
                     if ($firstErr === '') {
                         $firstErr = 'ID ' . $id . ': ' . $e->getMessage();
                     }
@@ -110,7 +114,7 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
                     $onProgress($offset + $n, $total, $id);
                 }
 
-                if ($n % 50 === 0) {
+                if ($n % 25 === 0) {
                     gc_collect_cycles();
                 }
             }
@@ -121,26 +125,24 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
 
             $payload = array(
                 'generated_at' => date('c'),
-                'source'       => 'zavod_mpdf_includes',
+                'source'       => 'zavod_mpdf_includes_cli_isolated',
                 'total_izvjestaja_u_bazi' => $total,
                 'chunk_offset' => $offset,
                 'chunk_limit'  => $limit,
                 'chunk_processed_attempts' => $n,
                 'prikupljeno_redova'      => count($rows),
                 'greske_pri_racunanju'    => $fail,
+                'failed_ids'              => $failedIds,
+                'first_error'             => $firstErr,
                 'rows'                    => $rows,
             );
             @file_put_contents($jsonPath, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 
-            if ($fail > 0) {
+            if (count($rows) === 0) {
                 return array(
                     'ok'      => false,
-                    'message' => "Backfill: greške na {$fail} od {$n} u chunk-u. Prva: {$firstErr}. JSON (djelomično): {$jsonPath}",
+                    'message' => 'Nema prikupljenih redova za UPDATE. Prva greška: ' . ($firstErr !== '' ? $firstErr : 'nepoznato') . '. JSON: ' . $jsonPath,
                 );
-            }
-
-            if (count($rows) === 0) {
-                return array('ok' => false, 'message' => 'Nema prikupljenih redova za UPDATE (neočekivano). JSON: ' . $jsonPath);
             }
 
             $pdo->beginTransaction();
@@ -162,9 +164,16 @@ if (!function_exists('norma_run_backfill_nisu_usaglaseni')) {
             $nextOffset = $offset + $n;
             $done = $nextOffset >= $total;
 
+            $msg = 'Backfill (Zavod PDF, izolovano): ažurirano ' . count($rows) . '/' . $n
+                . ' u chunku (offset ' . $offset . '). JSON: ' . $jsonPath;
+            if ($fail > 0) {
+                $msg .= ' UPOZORENJE: ' . $fail . ' grešaka (npr. ' . $firstErr . '). Failed IDs: '
+                    . implode(',', array_slice($failedIds, 0, 20));
+            }
+
             return array(
                 'ok'      => true,
-                'message' => 'Backfill izvjestaji_nisu_usaglaseni (Zavod PDF): ažurirano ' . count($rows) . ' redova u jednoj transakciji (chunk offset ' . $offset . ', ' . $n . ' pokušaja). JSON: ' . $jsonPath . ' (možeš obrisati nakon provjere).',
+                'message' => $msg,
                 'done' => $done,
                 'total' => $total,
                 'processed' => $n,

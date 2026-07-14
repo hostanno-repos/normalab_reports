@@ -175,6 +175,54 @@ if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni')) {
     }
 }
 
+if (!function_exists('norma_backfill_compute_zavod_nisu_usaglaseni_isolated')) {
+    /**
+     * Računa usaglašenost u odvojenom PHP CLI procesu (sigurno od redeclare fatals u mpdf templateima).
+     *
+     * @return array{ok:bool,nisu_usaglaseni?:int,finalusaglasenost?:string,vrsta_id?:int,message?:string}
+     */
+    function norma_backfill_compute_zavod_nisu_usaglaseni_isolated(
+        PDO $pdo,
+        int $reportId,
+        ?string $projectRoot = null
+    ): array {
+        $projectRoot = $projectRoot ?? dirname(__DIR__);
+        $script = __DIR__ . DIRECTORY_SEPARATOR . 'cli_backfill_one_report.php';
+        if (!is_readable($script)) {
+            return array('ok' => false, 'message' => 'Nedostaje cli_backfill_one_report.php');
+        }
+
+        $phpBin = defined('PHP_BINARY') && PHP_BINARY !== '' ? PHP_BINARY : 'php';
+        if (!function_exists('shell_exec') || in_array('shell_exec', array_map('trim', explode(',', (string) ini_get('disable_functions'))), true)) {
+            // Bez CLI izolacije: rizik fatala na mpdf 49/50.php (Cannot redeclare).
+            return norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId, $projectRoot);
+        }
+
+        $cmd = escapeshellarg($phpBin) . ' ' . escapeshellarg($script) . ' ' . (int) $reportId;
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $cmd .= ' 2>NUL';
+        } else {
+            $cmd .= ' 2>/dev/null';
+        }
+
+        $out = @shell_exec($cmd);
+        if ($out === null || trim((string) $out) === '') {
+            // Fallback: isti proces (rizik od redeclare fatals na 49/50)
+            return norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId, $projectRoot);
+        }
+
+        $decoded = json_decode(trim((string) $out), true);
+        if (!is_array($decoded) || !array_key_exists('ok', $decoded)) {
+            return array(
+                'ok'      => false,
+                'message' => 'CLI worker nije vratio validan JSON za #' . $reportId . '. Output: ' . substr(trim((string) $out), 0, 200),
+            );
+        }
+
+        return $decoded;
+    }
+}
+
 if (!function_exists('norma_backfill_apply_one_report')) {
     /**
      * @return array{ok:bool, report_id:int, old_value?:int, new_value?:int, finalusaglasenost?:string, vrsta_id?:int, message:string}
@@ -193,7 +241,7 @@ if (!function_exists('norma_backfill_apply_one_report')) {
             return array('ok' => false, 'report_id' => $reportId, 'message' => 'Izvještaj #' . $reportId . ' ne postoji.');
         }
 
-        $computed = norma_backfill_compute_zavod_nisu_usaglaseni($pdo, $reportId);
+        $computed = norma_backfill_compute_zavod_nisu_usaglaseni_isolated($pdo, $reportId);
         if (empty($computed['ok'])) {
             return array(
                 'ok'        => false,
