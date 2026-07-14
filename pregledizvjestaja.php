@@ -103,7 +103,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     $tbody_rows_html = '';
     foreach ($izvjestaji as $izvjestaj) {
         $pdfLink = 'pregledizvjestajapdf.php?izvjestaj=' . (int)$izvjestaj->izvjestaji_id;
-        $tbody_rows_html .= '<tr>';
+        $nisuUsaglaseni = !empty($izvjestaj->izvjestaji_nisu_usaglaseni);
+        $rowClass = $nisuUsaglaseni ? ' class="izvjestaj-neusaglasen"' : '';
+        $tbody_rows_html .= '<tr' . $rowClass . '>';
         $tbody_rows_html .= '<td scope="row">' . (isset($izvjestaj->izvjestaji_id) ? (int)$izvjestaj->izvjestaji_id : '') . '</td>';
         $tbody_rows_html .= '<td scope="row" class="text-center"><input type="checkbox" class="selectItemButton" h="izvjestaj" t="izvjestaji" o="' . (int)$izvjestaj->izvjestaji_id . '" m="' . (int)($izvjestaj->radninalozi_vrstauredjajaid ?? 0) . '" i="' . htmlspecialchars($pdfLink) . '"></td>';
         $tbody_rows_html .= '<td scope="row" class="text-center">' . (isset($izvjestaj->radninalozi_broj) ? htmlspecialchars($izvjestaj->radninalozi_broj) : '') . '</td>';
@@ -266,6 +268,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     <style>
         tr:hover {
             background-color: #eee;
+        }
+        tr.izvjestaj-neusaglasen td {
+            font-weight: bold;
         }
     </style>
 
