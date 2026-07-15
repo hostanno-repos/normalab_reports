@@ -34,8 +34,8 @@
         if ($("#opetPdf").attr("pdfToOpen") == "") {
             alert('Molimo označite <?php echo $itemToSelect ?> za generisanje pdf dokumenta.');
         } else {
-            window.location.replace($("#opetPdf").attr("pdfToOpen"));
-    }
+            window.open($("#opetPdf").attr("pdfToOpen"), "_blank");
+        }
     }
     function kreirajOtvoriIzvjestaj() {
         if ($("#openReport").attr("reportToShow") == "") {

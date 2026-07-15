@@ -325,9 +325,7 @@ $pdf->Row1(array("Potpis:", "_________________", "_________________", "_________
 $pdf->Ln(5);
 $pdf->Row1(array("Datum:", "_________________", "_________________", "_________________"));
 
-$pdf->Output('D', $naziv . ".pdf");
-
-//FOOTER
-include_once ('includes/footer.php');
+$pdf->Output('I', $naziv . ".pdf");
+exit;
 
 ?>
