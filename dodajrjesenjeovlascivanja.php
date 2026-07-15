@@ -10,8 +10,6 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         exit;
     }
 
-    $defaultBroj = '18/1.10/393.10-03-09-25/25';
-    $defaultDatum = '2025-12-30';
     $defaultTekst = norma_rjesenje_default_tekst_zakljucka(
         '{{BROJRJESENJA}}',
         '{{DATUMRJESENJA}}'
@@ -39,11 +37,11 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                 <form class="col-lg-12 d-flex flex-wrap" action="<?php echo end($page_); ?>" method="post" id="form-rjesenje-ovlascivanje">
                     <div class="col-lg-4 d-flex flex-column mb-2">
                         <label for="rjesenjazaovlascivanje_broj_rjesenja">Broj rješenja:</label>
-                        <input type="text" id="rjesenjazaovlascivanje_broj_rjesenja" name="rjesenjazaovlascivanje_broj_rjesenja" required placeholder="npr. 18/1.10/393.10-03-09-25/25" value="<?php echo htmlspecialchars($defaultBroj, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="text" id="rjesenjazaovlascivanje_broj_rjesenja" name="rjesenjazaovlascivanje_broj_rjesenja" required placeholder="npr. 18/1.10/393.10-03-09-25/25" value="">
                     </div>
                     <div class="col-lg-4 d-flex flex-column mb-2">
                         <label for="rjesenjazaovlascivanje_datum_izdavanja">Datum izdavanja:</label>
-                        <input type="date" id="rjesenjazaovlascivanje_datum_izdavanja" name="rjesenjazaovlascivanje_datum_izdavanja" required value="<?php echo htmlspecialchars($defaultDatum, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="date" id="rjesenjazaovlascivanje_datum_izdavanja" name="rjesenjazaovlascivanje_datum_izdavanja" required value="">
                     </div>
                     <div class="col-lg-12 d-flex flex-column mb-2">
                         <label for="rjesenjazaovlascivanje_tekst_zakljucka">Tekst zaključka:</label>
