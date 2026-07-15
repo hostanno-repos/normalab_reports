@@ -129,6 +129,19 @@ if ($insertObject == 1) {
         exit;
     }
 
+    if ($nazivTabele == 'rjesenjazaovlascivanje') {
+        require_once dirname(__DIR__) . '/includes/rjesenje_zakljucak_helper.php';
+        if (empty(trim((string) ($rjesenjazaovlascivanje_tekst_zakljucka ?? '')))) {
+            $rjesenjazaovlascivanje_tekst_zakljucka = norma_rjesenje_default_tekst_zakljucka(
+                '{{BROJRJESENJA}}',
+                '{{DATUMRJESENJA}}'
+            );
+        }
+        if (empty(trim((string) ($rjesenjazaovlascivanje_tekst_zakljucka_vage ?? '')))) {
+            $rjesenjazaovlascivanje_tekst_zakljucka_vage = $rjesenjazaovlascivanje_tekst_zakljucka;
+        }
+    }
+
     if (isset($fakture_brojac)) {
         $fakture_brojac = $fakture_brojac + 1;
     }

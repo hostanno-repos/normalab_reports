@@ -343,6 +343,28 @@ $migrations = array(
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
     ),
     array(
+        'id'   => 'rjesenjazaovlascivanje_tekst_zakljucka_kolone',
+        'name' => 'Rješenja o ovlašćivanju — kolone Tekst zaključka i Tekst zaključka - vage',
+        'sql'  => "ALTER TABLE `rjesenjazaovlascivanje`
+            ADD COLUMN `rjesenjazaovlascivanje_tekst_zakljucka` TEXT NULL AFTER `rjesenjazaovlascivanje_datum_izdavanja`,
+            ADD COLUMN `rjesenjazaovlascivanje_tekst_zakljucka_vage` TEXT NULL AFTER `rjesenjazaovlascivanje_tekst_zakljucka`"
+    ),
+    array(
+        'id'   => 'rjesenjazaovlascivanje_tekst_zakljucka_backfill',
+        'name' => 'Rješenja o ovlašćivanju — backfill teksta zaključka za postojeća rješenja',
+        'php'  => __DIR__ . '/includes/migration_rjesenje_tekst_zakljucka.php',
+    ),
+    array(
+        'id'   => 'rjesenjazaovlascivanje_broj_placeholder',
+        'name' => 'Rješenja o ovlašćivanju — placeholder za broj rješenja',
+        'php'  => __DIR__ . '/includes/migration_rjesenje_broj_placeholder.php',
+    ),
+    array(
+        'id'   => 'rjesenjazaovlascivanje_datum_placeholder',
+        'name' => 'Rješenja o ovlašćivanju — placeholder za datum rješenja',
+        'php'  => __DIR__ . '/includes/migration_rjesenje_datum_placeholder.php',
+    ),
+    array(
         'id'   => 'backfill_izvjestaji_nisu_usaglaseni_v2',
         'name' => 'Backfill izvjestaji_nisu_usaglaseni v2 (apsolutno/relativno po mjernoj veličini — kao PDF)',
         'php'  => __DIR__ . '/includes/migration_backfill_izvjestaji_nisu_usaglaseni.php',

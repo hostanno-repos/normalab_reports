@@ -183,6 +183,7 @@ $total_column = $select->columnCount();
                         $readonly = 0;
                         $input = 'input';
                         $disabled = 0;
+                        $textareaRows = 1;
                         unset($tableSelect, $columnToEqual, $columnToShow, $columnToShow_1, $columnToShow_2);
                         //var_dump($meta['native_type']);
                         switch ($meta['native_type']) {
@@ -504,6 +505,30 @@ $total_column = $select->columnCount();
                                 $tip = "number";
                                 $disabled = 0;
                                 break;
+                            case "rjesenjazaovlascivanje_broj_rjesenja":
+                                $labelName = "Broj rješenja";
+                                $input = "input";
+                                $tip = "text";
+                                $disabled = 0;
+                                break;
+                            case "rjesenjazaovlascivanje_datum_izdavanja":
+                                $labelName = "Datum izdavanja";
+                                $input = "input";
+                                $tip = "date";
+                                $disabled = 0;
+                                break;
+                            case "rjesenjazaovlascivanje_tekst_zakljucka":
+                                $labelName = "Tekst zaključka";
+                                $input = "textarea";
+                                $textareaRows = 6;
+                                $disabled = 0;
+                                break;
+                            case "rjesenjazaovlascivanje_tekst_zakljucka_vage":
+                                $labelName = "Tekst zaključka - vage";
+                                $input = "textarea";
+                                $textareaRows = 6;
+                                $disabled = 0;
+                                break;
                             default:
                                 $input = "input";
                                 //$tip = "text";
@@ -514,7 +539,7 @@ $total_column = $select->columnCount();
                         <?php if ($tableName != "radninalozi_") { ?>
 
                             <?php if ($labelName != "Id" && $labelName != "Timestamp" && $meta['name'] != "mjerila_djeca" && !($meta['name'] == 'korisnici_lozinka_prikaz' && !in_array($_SESSION['user-type'], [1, 7]))) { ?>
-                                <div class="col-lg-3 d-flex flex-column mb-2">
+                                <div class="col-lg-<?php echo ($input == 'textarea') ? '12' : '3'; ?> d-flex flex-column mb-2">
                                     <label for="<?php echo $meta['name'] ?>"><?php echo $labelName ?>:</label>
                                 <?php } ?>
 
@@ -541,7 +566,10 @@ $total_column = $select->columnCount();
                                            }else if($disabled == 1){echo "disabled";}else if(!empty($readonly)){echo "readonly";} ?> step="any">
                                 <?php } else if ($input == "textarea") { ?>
                                         <textarea name="<?php echo $meta['name'] ?>"
-                                            id="" rows="1"><?php echo $singleObject[$meta['name']] ?></textarea>
+                                            id="" rows="<?php echo (int) ($textareaRows ?? 1); ?>"><?php echo htmlspecialchars((string) ($singleObject[$meta['name']] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                        <?php if (in_array($meta['name'], array('rjesenjazaovlascivanje_tekst_zakljucka', 'rjesenjazaovlascivanje_tekst_zakljucka_vage'), true)) { ?>
+                                            <small class="text-muted">Placeholders: <code>{{BROJRJESENJA}}</code>, <code>{{DATUMRJESENJA}}</code> i <code>{{NOVIZIG}}</code>.</small>
+                                        <?php } ?>
 
                                 <?php } else if ($input == "select") { ?>
                                             <input type="<?php echo $tip ?>" name="<?php echo $meta['name'] ?>"
