@@ -145,6 +145,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     <a onclick="openPdfRadniNalog()" pdfToOpen="" id="opetPdf"><button class="btn btn-dark"
                             data-toggle="tooltip" data-placement="bottom" title="Preuzmi pdf"><i class="bi-filetype-pdf"
                                 style="font-size:18px"></i> Preuzmi pdf</button></a>
+                    <a onclick="openPdfRadniNalogBatch()" id="stampajPdfRadniNalozi"><button class="btn btn-dark"
+                            data-toggle="tooltip" data-placement="bottom" title="Spojeni PDF za štampu"><i class="bi bi-printer"
+                                style="font-size:18px"></i> Štampaj PDF</button></a>
                     <?php } ?>
                     <?php if (ima_permisiju('pregledradnihnaloga', 'pregled') && ima_permisiju('pregledizvjestaja', 'dodavanje')) { ?>
                     <a onclick="kreirajOtvoriIzvjestaj()" reportToShow="" id="openReport"><button class="btn btn-dark"
@@ -204,7 +207,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     <?php include('includes/pagination.php'); ?>
                 </div>
                 <div class="col-lg-12">
-                    <table class="table w-100">
+                    <table class="table w-100" data-multi-select="1">
                         <thead>
                             <tr>
                                 <th scope="col">#</th>
@@ -229,6 +232,21 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     </main>
 
     <script>
+    function openPdfRadniNalogBatch() {
+        var ids = [];
+        document.querySelectorAll('.selectItemButton:checked').forEach(function (el) {
+            var id = parseInt(el.getAttribute('o'), 10);
+            if (id > 0) {
+                ids.push(id);
+            }
+        });
+        if (ids.length === 0) {
+            alert('Molimo označite barem jedan radni nalog za štampu.');
+            return;
+        }
+        window.open('pregledradnognaloga.php?ids=' + ids.join(','), '_blank');
+    }
+
     (function() {
         var searchRn = document.getElementById('search_rn');
         var searchSerija = document.getElementById('search_serija');

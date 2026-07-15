@@ -317,13 +317,13 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     <!-- TEMPERATURA -->
                     <div class="col-lg-3 d-flex flex-column mb-2">
                         <label for="izvjestaji_temperatura">Temperatura[°C]: +/-1°C</label>
-                        <input type="text" name="izvjestaji_temperatura" value="0">
+                        <input type="text" name="izvjestaji_temperatura" value="1">
                     </div>
 
                     <!-- RELATIVNA VLAŽNOST -->
                     <div class="col-lg-3 d-flex flex-column mb-2">
                         <label for="izvjestaji_vlaznost">Relativna vlažnost[%]: +/-1%</label>
-                        <input type="text" name="izvjestaji_vlaznost" value="0">
+                        <input type="text" name="izvjestaji_vlaznost" value="1">
                     </div>
 
                     <!-- SKINUTI ŽIG -->
@@ -621,7 +621,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                         <?php for ($c = 1; $c <= 3; $c++) { ?>
                                             <td><input type="text"
                                                     name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>"
-                                                    value="0" class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" step=".01">
+                                                    value="-" class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" step=".01">
                                             </td>
                                         <?php } ?>
 
@@ -665,7 +665,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                             <?php for ($c = 1; $c <= 3; $c++) { ?>
                                                 <td><input type="text"
                                                         name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>"
-                                                        value="0" class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" step=".01">
+                                                        value="-" class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" step=".01">
                                                 </td>
                                             <?php } ?>
 
@@ -716,7 +716,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                             <td><input 
                                                     type="text" 
                                                     name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>" 
-                                                    value="0" 
+                                                    value="-" 
                                                     class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" 
                                                     step=".01">
                                             </td>
@@ -758,7 +758,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                             <?php for ($c = 1; $c <= 10; $c++) { ?>
                                             <td><input type="text"
                                                        name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>" 
-                                                       value="0" 
+                                                       value="-" 
                                                        class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" 
                                                        step=".01">
                                                     </td>
@@ -780,7 +780,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                             <?php for ($c = 11; $c <= 20; $c++) { ?>
                                             <td><input type="text"
                                                        name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>"   
-                                                       value="0" 
+                                                       value="-" 
                                                        class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" 
                                                        step=".01">
                                                     </td>
@@ -802,7 +802,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                             <?php for ($c = 1; $c <= 2; $c++) { ?>
                                             <td><input type="text"
                                                        name="<?php echo "rezultat_" . $mjernevelicine[$i - 1]['mjernevelicine_id'] . "_" . $referentnavrijednost['referentnevrijednosti_id'] . "_" . $c ?>"
-                                                        value="0" 
+                                                        value="-" 
                                                         class="w-100 mjerenje mjerenje<?php echo $c ?> text-right" 
                                                         step=".01">
                                                     </td>
@@ -974,9 +974,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                     
                                     <th class="text-center" scope="col">
                                         <input class="text-right rezultat_0_0_1 mjerenje" 
-                                            type="number" 
+                                            type="text" 
                                             name="rezultat_0_0_1" 
-                                            value="0.00" 
+                                            value="-" 
                                             step=".01">
                                     </th>
                                     
@@ -1039,9 +1039,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                 <!-- MAX4 -->
                                 <th class="text-center max4" scope="col">     
                                     <input class="text-right rezultat_0_0_0 mjerenje" 
-                                           type="number" 
+                                           type="text" 
                                            name="rezultat_0_0_0"
-                                           value="0.00" 
+                                           value="-" 
                                            step=".01">
                                 </th>
                                 
