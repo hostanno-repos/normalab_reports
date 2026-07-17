@@ -133,8 +133,8 @@ if ($insertObject == 1) {
         require_once dirname(__DIR__) . '/includes/rjesenje_zakljucak_helper.php';
         if (empty(trim((string) ($rjesenjazaovlascivanje_tekst_zakljucka ?? '')))) {
             $rjesenjazaovlascivanje_tekst_zakljucka = norma_rjesenje_default_tekst_zakljucka(
-                '{{BROJRJESENJA}}',
-                '{{DATUMRJESENJA}}'
+                '[BROJRJESENJA]',
+                '[DATUMRJESENJA]'
             );
         }
         if (empty(trim((string) ($rjesenjazaovlascivanje_tekst_zakljucka_vage ?? '')))) {

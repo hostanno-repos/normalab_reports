@@ -1,6 +1,7 @@
 <?php
 /**
- * Zamjenjuje konkretan broj rješenja placeholderom u već sačuvanim tekstovima.
+ * Konvertuje placeholdere iz {{X}} u [X] sintaksu u sačuvanim tekstovima zaključka.
+ * Vitičaste zagrade u POST-u blokira mod_security na serveru (403 pri snimanju).
  *
  * @return array{ok:bool,message:string}
  */
@@ -15,9 +16,11 @@ if (!$chk) {
     return array('ok' => false, 'message' => 'Kolona tekst_zakljucka ne postoji.');
 }
 
+$stara = array('{{NOVIZIG}}', '{{BROJRJESENJA}}', '{{DATUMRJESENJA}}');
+$nova = array('[NOVIZIG]', '[BROJRJESENJA]', '[DATUMRJESENJA]');
+
 $rows = $pdo->query(
     'SELECT `rjesenjazaovlascivanje_id`,
-            `rjesenjazaovlascivanje_broj_rjesenja`,
             `rjesenjazaovlascivanje_tekst_zakljucka`,
             `rjesenjazaovlascivanje_tekst_zakljucka_vage`
      FROM `rjesenjazaovlascivanje`'
@@ -33,15 +36,10 @@ $update = $pdo->prepare(
 
 $n = 0;
 foreach ($rows as $row) {
-    $broj = trim((string) ($row['rjesenjazaovlascivanje_broj_rjesenja'] ?? ''));
-    if ($broj === '') {
-        continue;
-    }
-
     $tekst = (string) ($row['rjesenjazaovlascivanje_tekst_zakljucka'] ?? '');
     $tekstVage = (string) ($row['rjesenjazaovlascivanje_tekst_zakljucka_vage'] ?? '');
-    $noviTekst = str_replace($broj, '[BROJRJESENJA]', $tekst);
-    $noviTekstVage = str_replace($broj, '[BROJRJESENJA]', $tekstVage);
+    $noviTekst = str_replace($stara, $nova, $tekst);
+    $noviTekstVage = str_replace($stara, $nova, $tekstVage);
 
     if ($noviTekst === $tekst && $noviTekstVage === $tekstVage) {
         continue;
@@ -53,5 +51,5 @@ foreach ($rows as $row) {
 
 return array(
     'ok' => true,
-    'message' => 'Placeholder broja rješenja: ažurirano ' . $n . ' rješenja.',
+    'message' => 'Placeholder sintaksa {{X}} -> [X]: ažurirano ' . $n . ' rješenja.',
 );

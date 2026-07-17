@@ -11,8 +11,8 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     }
 
     $defaultTekst = norma_rjesenje_default_tekst_zakljucka(
-        '{{BROJRJESENJA}}',
-        '{{DATUMRJESENJA}}'
+        '[BROJRJESENJA]',
+        '[DATUMRJESENJA]'
     );
 
     include_once ('includes/header.php');
@@ -46,7 +46,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     <div class="col-lg-12 d-flex flex-column mb-2">
                         <label for="rjesenjazaovlascivanje_tekst_zakljucka">Tekst zaključka:</label>
                         <textarea id="rjesenjazaovlascivanje_tekst_zakljucka" name="rjesenjazaovlascivanje_tekst_zakljucka" rows="6"><?php echo htmlspecialchars($defaultTekst, ENT_QUOTES, 'UTF-8'); ?></textarea>
-                        <small class="text-muted">Placeholders: <code>{{BROJRJESENJA}}</code>, <code>{{DATUMRJESENJA}}</code> i <code>{{NOVIZIG}}</code> — zamjenjuju se na PDF-u.</small>
+                        <small class="text-muted">Placeholders: <code>[BROJRJESENJA]</code>, <code>[DATUMRJESENJA]</code> i <code>[NOVIZIG]</code> — zamjenjuju se na PDF-u.</small>
                     </div>
                     <div class="col-lg-12 d-flex flex-column mb-2">
                         <label for="rjesenjazaovlascivanje_tekst_zakljucka_vage">Tekst zaključka - vage:</label>

@@ -365,6 +365,11 @@ $migrations = array(
         'php'  => __DIR__ . '/includes/migration_rjesenje_datum_placeholder.php',
     ),
     array(
+        'id'   => 'rjesenjazaovlascivanje_placeholder_sintaksa',
+        'name' => 'Rješenja o ovlašćivanju — placeholder sintaksa {{X}} u [X] (mod_security 403 fix)',
+        'php'  => __DIR__ . '/includes/migration_rjesenje_placeholder_sintaksa.php',
+    ),
+    array(
         'id'   => 'backfill_izvjestaji_nisu_usaglaseni_v2',
         'name' => 'Backfill izvjestaji_nisu_usaglaseni v2 (apsolutno/relativno po mjernoj veličini — kao PDF)',
         'php'  => __DIR__ . '/includes/migration_backfill_izvjestaji_nisu_usaglaseni.php',

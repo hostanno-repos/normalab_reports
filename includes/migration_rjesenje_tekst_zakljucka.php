@@ -26,7 +26,7 @@ $st = $pdo->prepare(
 
 $n = 0;
 foreach ($rows as $row) {
-    $tekst = norma_rjesenje_default_tekst_zakljucka('{{BROJRJESENJA}}', '{{DATUMRJESENJA}}');
+    $tekst = norma_rjesenje_default_tekst_zakljucka('[BROJRJESENJA]', '[DATUMRJESENJA]');
     $st->execute(array($tekst, $tekst, (int) $row['rjesenjazaovlascivanje_id']));
     $n++;
 }

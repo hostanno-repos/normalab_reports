@@ -568,7 +568,7 @@ $total_column = $select->columnCount();
                                         <textarea name="<?php echo $meta['name'] ?>"
                                             id="" rows="<?php echo (int) ($textareaRows ?? 1); ?>"><?php echo htmlspecialchars((string) ($singleObject[$meta['name']] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
                                         <?php if (in_array($meta['name'], array('rjesenjazaovlascivanje_tekst_zakljucka', 'rjesenjazaovlascivanje_tekst_zakljucka_vage'), true)) { ?>
-                                            <small class="text-muted">Placeholders: <code>{{BROJRJESENJA}}</code>, <code>{{DATUMRJESENJA}}</code> i <code>{{NOVIZIG}}</code>.</small>
+                                            <small class="text-muted">Placeholders: <code>[BROJRJESENJA]</code>, <code>[DATUMRJESENJA]</code> i <code>[NOVIZIG]</code>.</small>
                                         <?php } ?>
 
                                 <?php } else if ($input == "select") { ?>

@@ -38,7 +38,7 @@ if (!function_exists('norma_rjesenje_default_tekst_zakljucka')) {
 
         return 'Резултати инспекције се односе искључиво на дати предмет у тренутку инспекције. '
             . 'На основу Рјешења о измјени и допуни рјешења о овлашћивању тијела за верификацију мјерила број '
-            . $broj . ' од ' . $datum . ' године, на мјерило је постављен републички жиг у облику наљепнице број: {{NOVIZIG}}.';
+            . $broj . ' од ' . $datum . ' године, на мјерило је постављен републички жиг у облику наљепнице број: [NOVIZIG].';
     }
 }
 
@@ -73,8 +73,8 @@ if (!function_exists('norma_rjesenje_legacy_tekst_zakljucka')) {
         );
 
         return str_replace(
-            '{{NOVIZIG}}',
-            $noviZig,
+            array('[NOVIZIG]', '{{NOVIZIG}}'),
+            array($noviZig, $noviZig),
             norma_rjesenje_default_tekst_zakljucka($broj, $datum)
         );
     }
@@ -107,9 +107,16 @@ if (!function_exists('norma_rjesenje_ispis_zakljucka')) {
             $datumRjesenja = norma_rjesenje_format_datum(
                 $rjesenje['rjesenjazaovlascivanje_datum_izdavanja'] ?? null
             );
+            // Nova sintaksa [X] + stara {{X}} radi kompatibilnosti sa već sačuvanim tekstovima
             $raw = str_replace(
-                array('{{NOVIZIG}}', '{{BROJRJESENJA}}', '{{DATUMRJESENJA}}'),
-                array($noviZig, $brojRjesenja, $datumRjesenja),
+                array(
+                    '[NOVIZIG]', '[BROJRJESENJA]', '[DATUMRJESENJA]',
+                    '{{NOVIZIG}}', '{{BROJRJESENJA}}', '{{DATUMRJESENJA}}',
+                ),
+                array(
+                    $noviZig, $brojRjesenja, $datumRjesenja,
+                    $noviZig, $brojRjesenja, $datumRjesenja,
+                ),
                 $raw
             );
         }

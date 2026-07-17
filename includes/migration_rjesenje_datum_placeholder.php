@@ -38,8 +38,8 @@ foreach ($rows as $row) {
     $datum = norma_rjesenje_format_datum($row['rjesenjazaovlascivanje_datum_izdavanja'] ?? null);
     $tekst = (string) ($row['rjesenjazaovlascivanje_tekst_zakljucka'] ?? '');
     $tekstVage = (string) ($row['rjesenjazaovlascivanje_tekst_zakljucka_vage'] ?? '');
-    $noviTekst = str_replace($datum, '{{DATUMRJESENJA}}', $tekst);
-    $noviTekstVage = str_replace($datum, '{{DATUMRJESENJA}}', $tekstVage);
+    $noviTekst = str_replace($datum, '[DATUMRJESENJA]', $tekst);
+    $noviTekstVage = str_replace($datum, '[DATUMRJESENJA]', $tekstVage);
 
     if ($noviTekst === $tekst && $noviTekstVage === $tekstVage) {
         continue;
