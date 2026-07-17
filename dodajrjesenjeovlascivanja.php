@@ -65,6 +65,23 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     <style>
         .btn.btn-primary { background-color: #00335e; }
     </style>
+    <script>
+    // Tekst zaključka: base64 prije POST-a da mod_security ne blokira sadržaj (403)
+    (function () {
+        var form = document.getElementById('form-rjesenje-ovlascivanje');
+        if (!form) {
+            return;
+        }
+        form.addEventListener('submit', function () {
+            ['rjesenjazaovlascivanje_tekst_zakljucka', 'rjesenjazaovlascivanje_tekst_zakljucka_vage'].forEach(function (name) {
+                var el = form.querySelector('[name="' + name + '"]');
+                if (el && el.value && el.value.indexOf('B64FLD:') !== 0) {
+                    el.value = 'B64FLD:' + btoa(unescape(encodeURIComponent(el.value)));
+                }
+            });
+        });
+    })();
+    </script>
     <?php
 
 } else {

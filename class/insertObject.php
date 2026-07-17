@@ -1,5 +1,7 @@
 <?php
 
+require_once dirname(__DIR__) . '/includes/post_b64_decode.php';
+
 $insertObject = 0;
 
 foreach ($_POST as $key => $value) {

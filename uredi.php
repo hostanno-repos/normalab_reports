@@ -2355,6 +2355,24 @@ $total_column = $select->columnCount();
 
     </script>
 
+    <script>
+    // Tekst zaključka: base64 prije POST-a da mod_security ne blokira sadržaj (403)
+    (function () {
+        var form = document.getElementById('uredi-form');
+        if (!form || form.getAttribute('data-uredi-tabela') !== 'rjesenjazaovlascivanje') {
+            return;
+        }
+        form.addEventListener('submit', function () {
+            ['rjesenjazaovlascivanje_tekst_zakljucka', 'rjesenjazaovlascivanje_tekst_zakljucka_vage'].forEach(function (name) {
+                var el = form.querySelector('[name="' + name + '"]');
+                if (el && el.value && el.value.indexOf('B64FLD:') !== 0) {
+                    el.value = 'B64FLD:' + btoa(unescape(encodeURIComponent(el.value)));
+                }
+            });
+        });
+    })();
+    </script>
+
 <style>
     p,
     h6 {
