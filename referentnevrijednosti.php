@@ -150,6 +150,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                 <th scope="col" class="text-center">Mjerna veličina</th>
                                 <th scope="col" class="text-center">Referentna vrijednost</th>
                                 <th scope="col" class="text-center">Dozvoljeno odstupanje</th>
+                                <th scope="col" class="text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -176,6 +177,9 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                     </td>
                                     <td scope="row" class="text-center">
                                         <?php echo $referentnavrijednost->referentnevrijednosti_odstupanje . "%" ?>
+                                    </td>
+                                    <td scope="row" class="text-center">
+                                        <?php echo ((int)($referentnavrijednost->referentnevrijednosti_aktivna ?? 1) === 1) ? 'Aktivna' : 'Neaktivna'; ?>
                                     </td>
                                 </tr>
                             <?php } ?>

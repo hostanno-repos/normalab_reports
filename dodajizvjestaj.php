@@ -570,8 +570,14 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                                 <?php
 
                                 //KUPIMO REFERENTNE VRIJEDNOSTI ZA MJERNU VELIČINU
-                                $referentnevrijednosti = new allObjectsBy;
-                                $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by("referentnevrijednosti", "referentnevrijednosti_mjernavelicinaid", $mjernevelicine[$i - 1]['mjernevelicine_id'], "referentnevrijednosti_referentnavrijednost", "ASC");
+                                $stmtRefVrijednosti = $pdo->prepare(
+                                    "SELECT * FROM referentnevrijednosti
+                                     WHERE referentnevrijednosti_mjernavelicinaid = ?
+                                       AND COALESCE(referentnevrijednosti_aktivna, 1) = 1
+                                     ORDER BY referentnevrijednosti_referentnavrijednost ASC"
+                                );
+                                $stmtRefVrijednosti->execute(array($mjernevelicine[$i - 1]['mjernevelicine_id']));
+                                $referentnevrijednosti = $stmtRefVrijednosti->fetchAll(PDO::FETCH_ASSOC);
 
                                 //LOOP KROZ SVE REFERENTNE VRIJEDNOSTI
                                 foreach ($referentnevrijednosti as $referentnavrijednost) { ?>

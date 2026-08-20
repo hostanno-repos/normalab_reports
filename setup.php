@@ -370,6 +370,12 @@ $migrations = array(
         'php'  => __DIR__ . '/includes/migration_rjesenje_placeholder_sintaksa.php',
     ),
     array(
+        'id'   => 'referentnevrijednosti_aktivna_kolona',
+        'name' => 'Referentne vrijednosti — kolona aktivna/neaktivna',
+        'sql'  => "ALTER TABLE `referentnevrijednosti`
+            ADD COLUMN `referentnevrijednosti_aktivna` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1 AFTER `referentnevrijednosti_odstupanje`"
+    ),
+    array(
         'id'   => 'backfill_izvjestaji_nisu_usaglaseni_v2',
         'name' => 'Backfill izvjestaji_nisu_usaglaseni v2 (apsolutno/relativno po mjernoj veličini — kao PDF)',
         'php'  => __DIR__ . '/includes/migration_backfill_izvjestaji_nisu_usaglaseni.php',

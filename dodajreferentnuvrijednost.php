@@ -60,6 +60,13 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                         <label for="referentnevrijednosti_odstupanje">Dozvoljeno odstupanje:</label>
                         <input type="number" name="referentnevrijednosti_odstupanje" step="any" required>
                     </div>
+                    <div class="col-lg-4 d-flex flex-column mb-2">
+                        <label for="referentnevrijednosti_aktivna">Status:</label>
+                        <select name="referentnevrijednosti_aktivna" required>
+                            <option value="1" selected>Aktivna</option>
+                            <option value="0">Neaktivna</option>
+                        </select>
+                    </div>
                     <div class="col-lg-12 d-flex flex-column mt-3">
                         <button name="submit_referentnevrijednosti" class="btn btn-primary" type="submit"
                             style="width:150px">Sačuvaj</button>

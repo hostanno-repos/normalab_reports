@@ -403,6 +403,11 @@ $total_column = $select->columnCount();
                                 $input = "input";
                                 $tip = "number";
                                 break;
+                            case "referentnevrijednosti_aktivna":
+                                $labelName = "Status";
+                                $input = "select_da_ne_int";
+                                $disabled = 0;
+                                break;
                             case "korisnickeuloge_nivohijerarhijeid":
                                 $labelName = "Nivo hijerarhije";
                                 $input = "select";
@@ -1165,8 +1170,25 @@ $total_column = $select->columnCount();
                             <?php } ?>
                             <?php
 
-                            $referentnevrijednosti = new allObjectsBy;
-                            $referentnevrijednosti = $referentnevrijednosti->fetch_all_objects_by("referentnevrijednosti", "referentnevrijednosti_mjernavelicinaid", $mjernevelicine[$i - 1]['mjernevelicine_id'], "referentnevrijednosti_referentnavrijednost", "ASC");
+                            $stmtRefVrijednosti = $pdo->prepare(
+                                "SELECT DISTINCT rv.*
+                                 FROM referentnevrijednosti rv
+                                 LEFT JOIN rezultatimjerenja rm
+                                   ON rm.rezultatimjerenja_referentnavrijednostid = rv.referentnevrijednosti_id
+                                  AND rm.rezultatimjerenja_izvjestajid = ?
+                                  AND rm.rezultatimjerenja_mjernavelicinaid = rv.referentnevrijednosti_mjernavelicinaid
+                                 WHERE rv.referentnevrijednosti_mjernavelicinaid = ?
+                                   AND (
+                                        COALESCE(rv.referentnevrijednosti_aktivna, 1) = 1
+                                        OR rm.rezultatimjerenja_id IS NOT NULL
+                                   )
+                                 ORDER BY rv.referentnevrijednosti_referentnavrijednost ASC"
+                            );
+                            $stmtRefVrijednosti->execute(array(
+                                $izvjestaj['izvjestaji_id'],
+                                $mjernevelicine[$i - 1]['mjernevelicine_id'],
+                            ));
+                            $referentnevrijednosti = $stmtRefVrijednosti->fetchAll(PDO::FETCH_ASSOC);
 
                             $rezultatimjerenja = new allObjectsBy;
                             $rezultatimjerenja = $rezultatimjerenja->fetch_all_objects_by('rezultatimjerenja', 'rezultatimjerenja_izvjestajid',$izvjestaj['izvjestaji_id'], "rezultatimjerenja_id", "ASC");
