@@ -27,6 +27,7 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
     $perPageOptions = array(10, 25, 50, 100);
     $perPage = isset($_GET['per_page']) && in_array((int)$_GET['per_page'], $perPageOptions) ? (int)$_GET['per_page'] : 10;
     $currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+    $vrstaUredjajaFilter = isset($_GET['vrstauredjaja_id']) ? (int) $_GET['vrstauredjaja_id'] : 0;
 
     $columns = '
         referentnevrijednosti.*,
@@ -39,6 +40,13 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         ['type' => 'LEFT',  'table' => 'vrsteuredjaja', 'on' => 'mjernevelicine.mjernevelicine_vrstauredjajaid = vrsteuredjaja.vrsteuredjaja_id']
     ];
 
+    $whereRefVrijednosti = null;
+    $paramsRefVrijednosti = array();
+    if ($vrstaUredjajaFilter > 0) {
+        $whereRefVrijednosti = 'vrsteuredjaja.vrsteuredjaja_id = ?';
+        $paramsRefVrijednosti[] = $vrstaUredjajaFilter;
+    }
+
     $objects = new allObjectsWithPagination;
     $objects = $objects->fetch_all_objects_with_pagination(
         'referentnevrijednosti',
@@ -46,14 +54,15 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         'DESC',
         $perPage,
         $joins,
-        NULL,
-        [],
+        $whereRefVrijednosti,
+        $paramsRefVrijednosti,
         $columns
     );
 
     $referentnevrijednosti = $objects[0];
     $total_pages = (int) $objects[1];
     $total_results = isset($objects[2]) ? (int) $objects[2] : 0;
+    $vrsteuredjaja = $pdo->query('SELECT vrsteuredjaja_id, vrsteuredjaja_naziv, vrsteuredjaja_opis FROM vrsteuredjaja ORDER BY vrsteuredjaja_naziv ASC')->fetchAll(PDO::FETCH_OBJ);
     /* NEW CODE */
 
     ?>
@@ -90,6 +99,12 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
         </div><!-- End Page Title -->
 
         <section class="section dashboard">
+            <?php
+            $paginationQueryExtra = '';
+            if ($vrstaUredjajaFilter > 0) {
+                $paginationQueryExtra .= '&vrstauredjaja_id=' . $vrstaUredjajaFilter;
+            }
+            ?>
             <div class="row">
                 <div class="col-lg-12 mb-3 d-flex justify-content-between align-items-center">
                     <?php if ($total_results > 0) {
@@ -98,8 +113,23 @@ if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] != '') {
                     } ?>
                     <?php if ($total_results > 0) { ?><small class="text-muted">Prikaz <?php echo $from; ?>–<?php echo $to; ?> od <?php echo $total_results; ?> referentnih vrijednosti.</small><?php } else { ?><small class="text-muted">Trenutno nema referentnih vrijednosti.</small><?php } ?>
                     <div class="d-flex align-items-center">
+                        <label for="vrstauredjaja_filter" class="mr-2 mb-0"><small>Uređaj:</small></label>
+                        <select id="vrstauredjaja_filter" class="form-control form-control-sm mr-3" style="width:auto;" onchange="window.location.href='referentnevrijednosti.php?page=1&per_page=<?php echo (int) $perPage; ?>&vrstauredjaja_id='+this.value;">
+                            <option value="0">Svi uređaji</option>
+                            <?php foreach ($vrsteuredjaja as $vrstauredjajaOpt) { ?>
+                                <?php
+                                $nazivUredjaja = $vrstauredjajaOpt->vrsteuredjaja_naziv;
+                                if (!empty($vrstauredjajaOpt->vrsteuredjaja_opis)) {
+                                    $nazivUredjaja .= ' (' . $vrstauredjajaOpt->vrsteuredjaja_opis . ')';
+                                }
+                                ?>
+                                <option value="<?php echo (int) $vrstauredjajaOpt->vrsteuredjaja_id; ?>" <?php echo $vrstaUredjajaFilter === (int) $vrstauredjajaOpt->vrsteuredjaja_id ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($nazivUredjaja, ENT_QUOTES, 'UTF-8'); ?>
+                                </option>
+                            <?php } ?>
+                        </select>
                         <label for="per_page_select" class="mr-2 mb-0"><small>Prikaži po stranici:</small></label>
-                        <select id="per_page_select" class="form-control form-control-sm" style="width:auto;" onchange="window.location.href='referentnevrijednosti.php?page=1&per_page='+this.value;">
+                        <select id="per_page_select" class="form-control form-control-sm" style="width:auto;" onchange="window.location.href='referentnevrijednosti.php?page=1&per_page='+this.value+'&vrstauredjaja_id=<?php echo (int) $vrstaUredjajaFilter; ?>';">
                             <?php foreach ($perPageOptions as $opt) { ?>
                                 <option value="<?php echo $opt; ?>" <?php echo $perPage == $opt ? 'selected' : ''; ?>><?php echo $opt; ?></option>
                             <?php } ?>
