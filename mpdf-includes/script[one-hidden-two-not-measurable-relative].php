@@ -26,6 +26,26 @@ $isRelHum20 = isset($mjernavelicina) && in_array((int) $mjernavelicina['mjerneve
 foreach ($referentnevrijednosti as $referentnavrijednost) {
     include __DIR__ . '/../includes/rezultati_mjerenja_logika.php';
 
+    // Za ovu skriptu usaglašenost mora biti po relativnoj grešci (%)
+    // kako ne bi došlo do pogrešnog DA kada je relativna greška > dozvoljenog odstupanja.
+    $triBrojcana = (
+        $prvomjerenje !== '-' && $prvomjerenje !== '--' &&
+        $drugomjerenje !== '-' && $drugomjerenje !== '--' &&
+        $trecemjerenje !== '-' && $trecemjerenje !== '--' &&
+        is_numeric((string) $prvomjerenje) &&
+        is_numeric((string) $drugomjerenje) &&
+        is_numeric((string) $trecemjerenje)
+    );
+    if ($triBrojcana) {
+        $dozv = round((float) $referentnavrijednost['referentnevrijednosti_odstupanje'], $tacnost);
+        if ((float) $relativnagreska > (float) $dozv) {
+            $usaglasenost = 'NE';
+            $finalusaglasenost = 'не испуњава';
+        } else {
+            $usaglasenost = 'DA';
+        }
+    }
+
     if ($usaglasenost === 'NE') {
         $finalusaglasenost = 'не испуњава';
     }
