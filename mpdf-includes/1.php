@@ -76,7 +76,7 @@ include_once ('reports_head.php')
             </tr>
         </thead>
         <tbody>
-            <?php include('script[one-hidden-two-not-measurable-relative].php'); ?>
+            <?php include('script[one-hidden-two-not-measurable-absolute].php'); ?>
         </tbody>
     </table>
     
