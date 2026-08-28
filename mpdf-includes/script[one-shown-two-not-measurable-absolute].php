@@ -1,4 +1,7 @@
-<?php foreach ($referentnevrijednosti as $referentnavrijednost) {
+<?php
+require_once __DIR__ . '/../includes/norma_usaglasenost_pravila.php';
+
+foreach ($referentnevrijednosti as $referentnavrijednost) {
 
     //kupimo rezultate mjerenja za ovu referentnu vrijednost
     $rezultatimjerenja = new allResults;
@@ -72,6 +75,22 @@
     
     if (!isset($finalusaglasenost)) {
         $finalusaglasenost = "испуњава";
+    }
+
+    $mjernaVelicinaIdInvazivni = isset($mjernavelicina['mjernevelicine_id'])
+        ? (int) $mjernavelicina['mjernevelicine_id']
+        : 0;
+    if (norma_invazivni_preskoci_red_bez_mjerenja(
+        $mjernaVelicinaIdInvazivni,
+        (float) $referentnavrijednost['referentnevrijednosti_referentnavrijednost'],
+        $prvomjerenje,
+        $drugomjerenje,
+        $trecemjerenje
+    )) {
+        $prvomjerenje = "-";
+        $drugomjerenje = "-";
+        $trecemjerenje = "-";
+        continue;
     }
 
     if ($prvomjerenje != "-" && $drugomjerenje != "-" && $trecemjerenje != "-" && 

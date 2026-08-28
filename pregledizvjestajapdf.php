@@ -789,7 +789,14 @@ foreach ($mjernevelicine as $mjernavelicina) {
                 // script[one-hidden-two-not-measurable-relative] u else ISPISUJE red (ref, p1, p2, p3, "-", usaglašenost) – uključujući kad su sva tri "-".
                 // Mjerne veličine 10, 11, 17, 18, 19, 20, 28, 151, 152: ne prikazujemo red u else; ostale (npr. 1 Brzina otkucaja): prikazujemo kao u mpdf-u.
                 $standardnaTabelaNePrikazujeRedZaMjesovito = in_array((int)$mjernavelicina['mjernevelicine_id'], [10, 11, 17, 18, 19, 20, 28, 151, 152], true);
-                if (!$standardnaTabelaNePrikazujeRedZaMjesovito) {
+                $invazivniPreskociRed = norma_invazivni_preskoci_red_bez_mjerenja(
+                    (int) $mjernavelicina['mjernevelicine_id'],
+                    (float) $referentnavrijednost['referentnevrijednosti_referentnavrijednost'],
+                    $prvomjerenje,
+                    $drugomjerenje,
+                    $trecemjerenje
+                );
+                if (!$standardnaTabelaNePrikazujeRedZaMjesovito && !$invazivniPreskociRed) {
                     $pdf->Row(array(round($referentnavrijednost['referentnevrijednosti_referentnavrijednost'], 1), $prvomjerenje, $drugomjerenje, $trecemjerenje, "-", "-", "-", "-", $usaglasenost));
                 }
             }

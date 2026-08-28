@@ -173,3 +173,27 @@ if (!function_exists('norma_usaglasenost_sva_tri_brojcano')) {
             && is_numeric((string) $trece);
     }
 }
+
+if (!function_exists('norma_invazivni_preskoci_red_bez_mjerenja')) {
+    /**
+     * Invazivni pritisak (MV 7): Xs -10 i -50 se ne prikazuju u PDF-u ako nema mjerenja.
+     */
+    function norma_invazivni_preskoci_red_bez_mjerenja(
+        int $mjernaVelicinaId,
+        float $referentnaVrijednostXs,
+        $prvo,
+        $drugo,
+        $trece
+    ): bool {
+        if ($mjernaVelicinaId !== 7) {
+            return false;
+        }
+
+        $xs = (int) round($referentnaVrijednostXs);
+        if (!in_array($xs, [-10, -50], true)) {
+            return false;
+        }
+
+        return !norma_usaglasenost_sva_tri_brojcano($prvo, $drugo, $trece);
+    }
+}

@@ -80,7 +80,13 @@ $debugReason = '';
 $cmpEpsilon = 1e-9;
 
 // --- Usaglašenost (ista logika kao u mpdf skriptama) ---
-if (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+if (norma_invazivni_preskoci_red_bez_mjerenja($mjvId, $refXs, $prvomjerenje, $drugomjerenje, $trecemjerenje)) {
+    $usaglasenost = '-';
+    $debugReason = 'Invazivni pritisak Xs -10/-50 bez mjerenja -> "-" (red se ne prikazuje)';
+    if (!isset($finalusaglasenost)) {
+        $finalusaglasenost = 'su USAGLAŠENI';
+    }
+} elseif (norma_usaglasenost_mjerenje_nije_izvrseno($prvomjerenje, $drugomjerenje, $trecemjerenje)) {
     $usaglasenost = 'NE';
     $finalusaglasenost = 'NISU USAGLAŠENI';
     $debugReason = 'Sva tri mjerenja su "--" (nije mjerljivo) -> NE';
